@@ -38,9 +38,9 @@
    (length      :accessor len   :initarg :len)))
 
 (defmethod initialize-instance :after ((header header) &key)
-  (when (not (numberp (gethash (op header) +op-codes+)))
+  (when (not (integerp (gethash (op header) +op-codes+)))
     (error (format nil "Unknown op-code: ~A" (op header))))
-  (when (not (numberp (gethash (cap header) +consistency+)))
+  (when (not (integerp (gethash (cap header) +consistency+)))
     (error (format nil "Unknown consistency setting: ~A" (cap header))))
   (when (not (member (ptype header) +message-types+))
     (error (format nil "Unknown message type: ~A" (ptype header)))))
