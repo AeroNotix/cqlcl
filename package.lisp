@@ -1,0 +1,2 @@
+(defpackage :cqlcl
+  (:use #:cl))
