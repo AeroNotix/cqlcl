@@ -73,3 +73,10 @@
         (write-int len stream)
         (write-short len stream))
     (write-string value stream)))
+
+(defmethod encode-value ((value hash-table) stream)
+  (let ((num-entries (hash-table-count value)))
+    (write-short num-entries stream)
+    (maphash (lambda (k v)
+               (encode-value k stream)
+               (encode-value v stream)) value)))
