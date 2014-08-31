@@ -14,6 +14,10 @@
     `(defun ,fun-name (,arg1 ,arg2)
        (write-sized ,arg1 ,size ,arg2))))
 
+(defun make-in-memory-output-stream ()
+  (flexi-streams:make-flexi-stream
+   (flexi-streams:make-in-memory-output-stream)))
+
 (define-binary-write octet  8)
 (define-binary-write short 16)
 (define-binary-write int   32)
