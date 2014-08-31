@@ -1,8 +1,9 @@
 (in-package :cqlcl)
 
 
-(defconstant +request+  #x01)
-(defconstant +response+ #x81)
+(defconstant +default-version+ #x01)
+(defconstant +request+  #x00)
+(defconstant +response+ #x01)
 (defconstant +message-types+ (list +request+ +response+))
 (defconstant +op-codes+
   (alexandria:alist-hash-table
@@ -32,15 +33,33 @@
 
 (defclass header ()
   ((ptype       :accessor ptype :initarg :ptype)
-   (consistency :accessor cap   :initarg :cap)
+   (version     :accessor vsn   :initarg :vsn :initform +default-version+)
+   (compression :accessor compression :initarg :compression :initform nil)
    (stream-id   :accessor id    :initarg :id)
    (op-code     :accessor op    :initarg :op)
    (length      :accessor len   :initarg :len)))
 
+(defgeneric write-to (stream value))
+
 (defmethod initialize-instance :after ((header header) &key)
+  (when (not (integerp (vsn header)))
+    (error (format nil "Version is not valid: ~A" (vsn header))))
+  (when (not (integerp (id header)))
+    (error (format nil "Stream ID is not valid: ~A" (id header))))
   (when (not (integerp (gethash (op header) +op-codes+)))
     (error (format nil "Unknown op-code: ~A" (op header))))
-  (when (not (integerp (gethash (cap header) +consistency+)))
-    (error (format nil "Unknown consistency setting: ~A" (cap header))))
   (when (not (member (ptype header) +message-types+))
-    (error (format nil "Unknown message type: ~A" (ptype header)))))
+    (error (format nil "Unknown message type: ~A" (ptype header))))
+  (setf (len header) (file-position (body header))))
+
+(defgeneric encode-value (value stream)
+  (:documentation "Encodes a value into the CQL wire format."))
+
+(defmethod encode-value ((value header) stream)
+  (write-sized (logior
+                (ldb (byte 1 0) (ptype value))
+                (ldb (byte 7 0) (vsn value))) 8 stream)
+  (write-sized (if (compression value) 1 0) 8 stream)
+  (write-sized (id value) 8 stream)
+  (write-sized (gethash (op value) +op-codes+) 8 stream)
+  (write-sized (len value) 32 stream))

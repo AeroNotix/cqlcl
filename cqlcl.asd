@@ -5,6 +5,10 @@
   :description "CQLv2 binary protocol"
   :serial t
   :components ((:file "package")
-               (:file "cqlcl-protocol")
-               (:file "cqlcl-conn"))
-  :depends-on (:pooler :alexandria))
+               (:file "types")
+               (:file "protocol")
+               (:file "conn"))
+  :depends-on (:pooler
+               :alexandria
+               :flexi-streams
+               :cl-fad))

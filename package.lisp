@@ -1,2 +1,2 @@
 (defpackage :cqlcl
-  (:use #:cl))
+  (:use #:cl #:binary-types))
