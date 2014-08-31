@@ -1,2 +1,2 @@
 (defpackage :cqlcl
-  (:use #:cl #:binary-types))
+  (:use #:cl #:uuid #:split-sequence))
