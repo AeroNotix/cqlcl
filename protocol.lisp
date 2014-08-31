@@ -81,5 +81,11 @@
                (encode-value k stream)
                (encode-value v stream)) value)))
 
+(defmethod encode-value ((value null) stream)
+  (write-octet 0 stream))
+
+(defmethod encode-value ((value symbol) stream)
+  (write-octet 1 stream))
+
 (defmethod encode-value ((value uuid) stream)
   (write-sequence (uuid-to-byte-array value) stream))
