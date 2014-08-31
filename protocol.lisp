@@ -63,3 +63,6 @@
   (write-octet (id value) stream)
   (write-octet (gethash (op value) +op-codes+) stream)
   (write-int (len value) stream))
+
+(defmethod encode-value ((value integer) stream)
+  (write-int value stream))
