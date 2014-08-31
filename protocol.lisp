@@ -66,3 +66,10 @@
 
 (defmethod encode-value ((value integer) stream)
   (write-int value stream))
+
+(defmethod encode-value ((value string) stream)
+  (let ((len (length value)))
+    (if (> len 65535)
+        (write-int len stream)
+        (write-short len stream))
+    (write-string value stream)))
