@@ -80,3 +80,6 @@
     (maphash (lambda (k v)
                (encode-value k stream)
                (encode-value v stream)) value)))
+
+(defmethod encode-value ((value uuid) stream)
+  (write-sequence (uuid-to-byte-array value) stream))

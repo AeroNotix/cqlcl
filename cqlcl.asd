@@ -11,4 +11,4 @@
   :depends-on (:pooler
                :alexandria
                :flexi-streams
-               :cl-fad))
+               :uuid
