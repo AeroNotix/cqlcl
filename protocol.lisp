@@ -59,7 +59,7 @@
   (write-sized (logior
                 (ldb (byte 1 0) (ptype value))
                 (ldb (byte 7 0) (vsn value))) 8 stream)
-  (write-sized (if (compression value) 1 0) 8 stream)
-  (write-sized (id value) 8 stream)
-  (write-sized (gethash (op value) +op-codes+) 8 stream)
-  (write-sized (len value) 32 stream))
+  (write-octet (if (compression value) 1 0) stream)
+  (write-octet (id value) stream)
+  (write-octet (gethash (op value) +op-codes+) stream)
+  (write-int (len value) stream))
