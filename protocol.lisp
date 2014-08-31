@@ -56,9 +56,9 @@
   (:documentation "Encodes a value into the CQL wire format."))
 
 (defmethod encode-value ((value header) stream)
-  (write-sized (logior
-                (ldb (byte 1 0) (ptype value))
-                (ldb (byte 7 0) (vsn value))) 8 stream)
+  (write-octet (logior
+                (ldb (byte 8 0) (ptype value))
+                (ldb (byte 8 0) (vsn value))) stream)
   (write-octet (if (compression value) 1 0) stream)
   (write-octet (id value) stream)
   (write-octet (gethash (op value) +op-codes+) stream)
