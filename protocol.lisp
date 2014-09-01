@@ -50,7 +50,7 @@
     (error (format nil "Version is not valid: ~A" (vsn header))))
   (when (not (integerp (id header)))
     (error (format nil "Stream ID is not valid: ~A" (id header))))
-  (when (not (integerp (gethash (op header) +op-codes+)))
+  (when (not (integerp (gethash (op header) +op-code-name-to-digit+)))
     (error (format nil "Unknown op-code: ~A" (op header))))
   (when (not (member (ptype header) +message-types+))
     (error (format nil "Unknown message type: ~A" (ptype header))))
