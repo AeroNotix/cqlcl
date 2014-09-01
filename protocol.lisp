@@ -85,6 +85,9 @@
   (encode-value header stream))
 
 (defun encode-values (values)
+  ;; TODO: Implement this.  It should take a sequence of values which
+  ;; then should be MAPCAR'd over to `encode-value' into a stream and
+  ;; returned either as a BYTE-VECTOR or a STREAM.
   (declare (ignore values))
   (make-in-memory-output-stream))
 
