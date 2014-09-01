@@ -1,14 +1,14 @@
 (in-package :cqlcl)
 
 
-(defconstant +default-version+ #x01)
-(defconstant +header-length+ 8)
-(defconstant +packet-type-index+ 3)
-(defconstant +request+  #x00)
-(defconstant +response+ #x01)
+(defvar +default-version+ #x01)
+(defvar +header-length+ 8)
+(defvar +packet-type-index+ 3)
+(defvar +request+  #x00)
+(defvar +response+ #x01)
 
-(defconstant +message-types+ (list +request+ +response+))
-(defconstant +op-code-name-to-digit+
+(defvar +message-types+ (list +request+ +response+))
+(defvar +op-code-name-to-digit+
   (alexandria:alist-hash-table
    '((:error        . #x00)
      (:startup      . #x01)
@@ -23,9 +23,9 @@
      (:execute      . #x0a)
      (:register     . #x0b)
      (:event        . #x0c))))
-(defconstant +op-code-digit-to-name+
+(defvar +op-code-digit-to-name+
   (rev-hash +op-code-name-to-digit+))
-(defconstant +consistency+
+(defvar +consistency+
   (alexandria:alist-hash-table
    '((:any          . #x00)
      (:one          . #x01)
