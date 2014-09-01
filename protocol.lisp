@@ -2,6 +2,8 @@
 
 
 (defconstant +default-version+ #x01)
+(defconstant +header-length+ 8)
+(defconstant +packet-type-index+ 3)
 (defconstant +request+  #x00)
 (defconstant +response+ #x01)
 (defconstant +message-types+ (list +request+ +response+))
@@ -121,3 +123,48 @@
   (let ((encoded-ip (ip-to-byte-array value)))
     (write-octet (length encoded-ip) stream)
     (write-sequence encoded-ip stream)))
+(defun as-string (bv)
+  (flexi-streams:octets-to-string bv :external-format :utf-8))
+
+(defun parse-string (stream)
+  (let* ((size (read-short stream))
+         (buf  (make-array size :fill-pointer 0)))
+    (read-sequence buf stream :end size)
+    (as-string buf)))
+
+(defun parse-string-list (stream)
+  (let* ((size (read-short stream)))
+    (loop for i from 1 upto size
+       collect
+         (parse-string stream))))
+
+(defun parse-supported-packet (packet)
+  (let ((packet-stream (make-stream-from-byte-vector packet))
+        (options       (make-hash-table)))
+    (let ((num-entries (read-short packet-stream)))
+      (dotimes (i num-entries)
+        (let* ((key (parse-string packet-stream))
+               (entries (parse-string-list packet-stream)))
+          (setf (gethash key options) entries))))
+    options))
+
+(defun parse-packet (packet)
+  (case (parse-header (subseq packet 0 +header-length+))
+    (:supported
+     (parse-supported-packet (subseq packet 8)))))
+
+(defun parse-header (header)
+  (let* ((op-code (elt header +packet-type-index+))
+         (resp-type (gethash op-code +op-code-digit-to-name+)))
+    resp-type))
+
+(defun read-single-packet (conn)
+  (let ((out (make-array 512 :fill-pointer 0 :adjustable t)))
+    (do ((bite (read-byte conn) (read-byte conn)))
+        ((if (not (listen conn))
+             (progn
+               (vector-push-extend bite out)
+               t)
+             nil))
+      (vector-push-extend bite out))
+    out))
