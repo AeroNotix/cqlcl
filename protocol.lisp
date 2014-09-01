@@ -54,7 +54,10 @@
     (error (format nil "Unknown op-code: ~A" (op header))))
   (when (not (member (ptype header) +message-types+))
     (error (format nil "Unknown message type: ~A" (ptype header))))
-  (setf (len header) (file-position (body header))))
+  ;; TODO: This does nothing at the moment. We need to encode the body
+  ;; properly.
+  (when (body header)
+    (setf (body header) (encode-values (body header)))))
 
 (defmacro as-flags (&rest values)
   `(logior
