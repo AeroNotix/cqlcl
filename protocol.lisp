@@ -34,7 +34,7 @@
      (:each-quorum  . #x07))))
 
 (defclass header ()
-  ((ptype       :accessor ptype :initarg :ptype)
+  ((ptype       :accessor ptype :initarg :ptype :initform +request+)
    (version     :accessor vsn   :initarg :vsn :initform +default-version+)
    (compression :accessor compression :initarg :compression :initform nil)
    (tracing     :accessor tracing :initarg :tracing :initform nil)
