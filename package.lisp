@@ -1,2 +1,3 @@
 (defpackage :cqlcl
-  (:use #:cl #:uuid #:split-sequence))
+  (:use #:cl #:uuid #:split-sequence)
+  (:export #:parse-packet))
