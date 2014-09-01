@@ -41,6 +41,7 @@
    (stream-id   :accessor id    :initarg :id)
    (op-code     :accessor op    :initarg :op)
    (length      :accessor len   :initarg :len :initform 0)
+   (body        :accessor body  :initarg :body :initform nil)))
 
 (defgeneric write-to (stream value))
 
