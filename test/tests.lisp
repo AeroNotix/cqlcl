@@ -17,3 +17,9 @@
                              ("COMPRESSION" . ("snappy" "lz4"))) :test #'equalp))
            (parsed (parse-packet packet)))
       (hash-equal parsed expected-hash))))
+
+(define-test simple-connection
+  (let* ((conn (make-connection))
+         (conopt (gethash "COMPRESSION" (conn-options conn)))
+         (expected (values '("snappy" "lz4") t)))
+    (assert-equal conopt expected)))
