@@ -136,8 +136,8 @@
 
 (defun parse-string (stream)
   (let* ((size (read-short stream))
-         (buf  (make-array size :fill-pointer 0)))
-    (read-sequence buf stream :end size)
+         (buf  (make-array size :element-type '(unsigned-byte 8))))
+    (assert (= (read-sequence buf stream :end size) size))
     (as-string buf)))
 
 (defun parse-string-list (stream)
