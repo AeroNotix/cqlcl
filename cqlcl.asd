@@ -12,4 +12,4 @@
                :alexandria
                :flexi-streams
                :uuid
-               :split-sequenceo))
+               :split-sequence))
