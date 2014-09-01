@@ -40,7 +40,7 @@
    (tracing     :accessor tracing :initarg :tracing :initform nil)
    (stream-id   :accessor id    :initarg :id)
    (op-code     :accessor op    :initarg :op)
-   (length      :accessor len   :initarg :len)))
+   (length      :accessor len   :initarg :len :initform 0)
 
 (defgeneric write-to (stream value))
 
