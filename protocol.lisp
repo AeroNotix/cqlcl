@@ -45,7 +45,6 @@
    (length      :accessor len   :initarg :len :initform 0)
    (body        :accessor body  :initarg :body :initform nil)))
 
-(defgeneric write-to (stream value))
 ;; TODO: Maybe implement it as a re-entrant parser?
 ;; (defclass parser ()
 ;;   ((buf :accessor buf :initform
