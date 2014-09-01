@@ -53,17 +53,13 @@
     (error (format nil "Unknown message type: ~A" (ptype header))))
   (setf (len header) (file-position (body header))))
 
-(defgeneric encode-value (value stream)
-  (:documentation "Encodes a value into the CQL wire format."))
-
-
-(defun as-flag (value)
-  (print value)
-  `(ldb (byte 8 0) ,value))
-
 (defmacro as-flags (&rest values)
   `(logior
-    ,@(mapcar #'as-flag values)))
+    ,@(mapcar (lambda (value)
+                `(ldb (byte 8 0 ,value))) values)))
+
+(defgeneric encode-value (value stream)
+  (:documentation "Encodes a value into the CQL wire format."))
 
 (defmethod encode-value ((value header) stream)
   (write-octet (as-flags (ptype value) (vsn value)) stream)
