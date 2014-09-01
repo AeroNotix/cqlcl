@@ -95,6 +95,17 @@
   (:documentation "Encodes a value into the CQL wire format."))
 
 (defmethod encode-value ((value header) stream)
+  ;; TODO: Implement `define-binary-type' which would:
+  ;; (define-binary-type header
+  ;;  ((version/request-type (flags (0 version)
+  ;;                                (1 request-type))
+  ;;   (request-flags        (flags (0 compression)
+  ;;                                (1 tracing))
+  ;;   (stream-id            octet)
+  ;;   (length               octet))
+  ;;
+  ;; And that would generate a `DEFCLASS' to hold the values as well
+  ;; as the requisite parsing code (as below).
   (write-octet (as-flags (ptype value) (vsn value)) stream)
   (write-octet (as-flags (if (compression value) 1 0)
                          (if (tracing value) 1 0)) stream)
