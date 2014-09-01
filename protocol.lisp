@@ -148,7 +148,7 @@
 
 (defun parse-supported-packet (packet)
   (let ((packet-stream (make-stream-from-byte-vector packet))
-        (options       (make-hash-table)))
+        (options       (make-hash-table :test #'equalp)))
     (let ((num-entries (read-short packet-stream)))
       (dotimes (i num-entries)
         (let* ((key (parse-string packet-stream))
