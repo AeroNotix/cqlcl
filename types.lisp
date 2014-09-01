@@ -4,8 +4,8 @@
 (defun write-sized (value n stream)
   (let ((value (ldb (byte n 0) value)))
     (loop for i from (/ n 8) downto 1
-         do
-         (write-byte (ldb (byte n (* (1- i) 8)) value) stream))))
+       do
+         (write-byte (ldb (byte 8 (* (1- i) 8)) value) stream))))
 
 (defmacro define-binary-write (name size)
   (let ((arg1 (gensym "value"))
