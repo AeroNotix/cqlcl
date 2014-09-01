@@ -56,11 +56,19 @@
 (defgeneric encode-value (value stream)
   (:documentation "Encodes a value into the CQL wire format."))
 
+
+(defun as-flag (value)
+  (print value)
+  `(ldb (byte 8 0) ,value))
+
+(defmacro as-flags (&rest values)
+  `(logior
+    ,@(mapcar #'as-flag values)))
+
 (defmethod encode-value ((value header) stream)
-  (write-octet (logior
-                (ldb (byte 8 0) (ptype value))
-                (ldb (byte 8 0) (vsn value))) stream)
-  (write-octet (if (compression value) 1 0) stream)
+  (write-octet (as-flags (ptype value) (vsn value)) stream)
+  (write-octet (as-flags (if (compression value) 1 0)
+                         (if (tracing value) 1 0)) stream)
   (write-octet (id value) stream)
   (write-octet (gethash (op value) +op-codes+) stream)
   (write-int (len value) stream))
