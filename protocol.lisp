@@ -75,6 +75,11 @@
 
 (defun startup (stream &optional (header (make-header :startup nil 0)))
   (encode-value header stream))
+
+(defun encode-values (values)
+  (declare (ignore values))
+  (make-in-memory-output-stream))
+
 (defgeneric encode-value (value stream)
   (:documentation "Encodes a value into the CQL wire format."))
 
