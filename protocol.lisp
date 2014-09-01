@@ -62,7 +62,7 @@
 (defmacro as-flags (&rest values)
   `(logior
     ,@(mapcar (lambda (value)
-                `(ldb (byte 8 0 ,value))) values)))
+                `(ldb (byte 8 0) ,value)) values)))
 
 (defgeneric encode-value (value stream)
   (:documentation "Encodes a value into the CQL wire format."))
