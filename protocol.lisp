@@ -5,7 +5,7 @@
 (defconstant +request+  #x00)
 (defconstant +response+ #x01)
 (defconstant +message-types+ (list +request+ +response+))
-(defconstant +op-codes+
+(defconstant +op-code-name-to-digit+
   (alexandria:alist-hash-table
    '((:error        . #x00)
      (:startup      . #x01)
@@ -20,6 +20,8 @@
      (:execute      . #x0a)
      (:register     . #x0b)
      (:event        . #x0c))))
+(defconstant +op-code-digit-to-name+
+  (rev-hash +op-code-name-to-digit+))
 (defconstant +consistency+
   (alexandria:alist-hash-table
    '((:any          . #x00)
