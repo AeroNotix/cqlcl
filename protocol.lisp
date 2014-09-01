@@ -96,3 +96,8 @@
 
 (defmethod encode-value ((value uuid) stream)
   (write-sequence (uuid-to-byte-array value) stream))
+
+(defmethod encode-value ((value ip) stream)
+  (let ((encoded-ip (ip-to-byte-array value)))
+    (write-octet (length encoded-ip) stream)
+    (write-sequence encoded-ip stream)))

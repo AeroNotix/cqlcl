@@ -34,3 +34,24 @@
 (define-binary-write octet  8)
 (define-binary-write short 16)
 (define-binary-write int   32)
+
+(defclass ip () ())
+
+(defclass ipv4 (ip)
+  ((addr :accessor addr :initarg :addr :initform "0.0.0.0")))
+
+(defclass ipv6 (ip)
+  ((addr :accessor addr :initarg :addr :initform "0:0:0:0:0:0:0:0")))
+
+(defgeneric ip-to-byte-array (ip)
+  (:documentation "Returns a byte array representing an IP Address."))
+(defun parse-ip (ip delimiter byte-spec &optional (radix 10))
+  (map 'vector (lambda (octet)
+                 (ldb byte-spec (parse-integer octet :radix radix)))
+       (split-sequence delimiter (addr ip))))
+
+(defmethod ip-to-byte-array ((ip ipv4))
+  (parse-ip ip #\. (byte 8 0)))
+
+(defmethod ip-to-byte-array ((ip ipv6))
+  (parse-ip ip #\: (byte 16 0) 16))
