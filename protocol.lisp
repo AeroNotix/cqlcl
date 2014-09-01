@@ -46,6 +46,13 @@
    (body        :accessor body  :initarg :body :initform nil)))
 
 (defgeneric write-to (stream value))
+;; TODO: Maybe implement it as a re-entrant parser?
+;; (defclass parser ()
+;;   ((buf :accessor buf :initform
+;;         (make-array 512 :fill-pointer 0 :adjustable t))))
+
+;; (defun make-parser ()
+;;   (make-instance 'parser))
 
 (defmethod initialize-instance :after ((header header) &key)
   (when (not (integerp (vsn header)))
