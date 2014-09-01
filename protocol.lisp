@@ -64,6 +64,17 @@
     ,@(mapcar (lambda (value)
                 `(ldb (byte 8 0) ,value)) values)))
 
+
+(defun make-header (opcode body stream-id)
+  (let ((h (make-instance 'header :op opcode :id stream-id
+                          :tracing nil :compression nil :body body)))
+    h))
+
+(defun options (stream &optional (header (make-header :options nil 0)))
+  (encode-value header stream))
+
+(defun startup (stream &optional (header (make-header :startup nil 0)))
+  (encode-value header stream))
 (defgeneric encode-value (value stream)
   (:documentation "Encodes a value into the CQL wire format."))
 
