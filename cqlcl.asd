@@ -13,4 +13,20 @@
                :alexandria
                :flexi-streams
                :uuid
-               :split-sequence))
+               :split-sequence
+               :usocket)
+  :in-order-to ((test-op (test-op :cqlcl-test))))
+
+(defsystem cqlcl-test
+  :version "0.0.1"
+  :description "CQLv2 binary protocol tests"
+  :licence "BSD"
+  :components ((:module "test"
+                        :components
+                        ((:file "tests"))))
+  :depends-on (:cqlcl :lisp-unit)
+  :perform (test-op (o s)
+                    ;; LISP-UNIT:RUN-ALL-TESTS is a macro, so it can't be called
+                    ;; like a function.
+                    (eval `(,(intern "RUN-ALL-TESTS" :lisp-unit)
+                            :cqlcl-test))))
