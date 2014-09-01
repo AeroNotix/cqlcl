@@ -6,6 +6,7 @@
 (defconstant +packet-type-index+ 3)
 (defconstant +request+  #x00)
 (defconstant +response+ #x01)
+
 (defconstant +message-types+ (list +request+ +response+))
 (defconstant +op-code-name-to-digit+
   (alexandria:alist-hash-table
@@ -129,6 +130,7 @@
   (let ((encoded-ip (ip-to-byte-array value)))
     (write-octet (length encoded-ip) stream)
     (write-sequence encoded-ip stream)))
+
 (defun as-string (bv)
   (flexi-streams:octets-to-string bv :external-format :utf-8))
 
