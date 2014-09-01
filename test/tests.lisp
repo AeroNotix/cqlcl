@@ -23,3 +23,18 @@
          (conopt (gethash "COMPRESSION" (conn-options conn)))
          (expected (values '("snappy" "lz4") t)))
     (assert-equal conopt expected)))
+
+(define-test encode-decode-string-map
+  (labels ((hash-equal (h1 h2)
+             (maphash (lambda (k v)
+                        (assert-equal (gethash k h2) (values v t))) h1)))
+    (let* ((smap (alexandria:alist-hash-table
+                  '(("KEYNAME" . "KEYVALUE")
+                    ("KEYNAME2" . "KEYVALUE2")) :test #'equalp))
+           (os (flexi-streams:make-in-memory-output-stream))
+           (ims (flexi-streams:make-flexi-stream os)))
+      (encode-value smap ims)
+      (let* ((bv (flexi-streams:get-output-stream-sequence os))
+             (is (make-stream-from-byte-vector bv))
+             (parsed (parse-string-map is)))
+        (hash-equal parsed smap)))))

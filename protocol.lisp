@@ -159,15 +159,24 @@
        collect
          (parse-string stream))))
 
+(defun parse-map (stream value-fn)
+  (let ((map (make-hash-table :test #'equalp))
+        (num-entries (read-short stream)))
+    (dotimes (i num-entries)
+      (let* ((key (parse-string stream))
+             (entry (funcall value-fn stream)))
+        (setf (gethash key map) entry)))
+    map))
+
+(defun parse-string-multimap (stream)
+  (parse-map stream #'parse-string-list))
+
+(defun parse-string-map (stream)
+  (parse-map stream #'parse-string))
+
 (defun parse-supported-packet (packet)
-  (let ((packet-stream (make-stream-from-byte-vector packet))
-        (options       (make-hash-table :test #'equalp)))
-    (let ((num-entries (read-short packet-stream)))
-      (dotimes (i num-entries)
-        (let* ((key (parse-string packet-stream))
-               (entries (parse-string-list packet-stream)))
-          (setf (gethash key options) entries))))
-    options))
+  (let ((packet-stream (make-stream-from-byte-vector packet)))
+    (parse-string-multimap packet-stream)))
 
 (defun parse-packet (packet)
   (case (parse-header (subseq packet 0 +header-length+))
