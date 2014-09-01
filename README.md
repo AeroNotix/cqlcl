@@ -1,22 +1,23 @@
-cqlcl
+CQLCL
 =====
 
-A Cassandra native protocol client in Erlang
-
+A Common Lisp client to Cassandra using the native protocol
 
 Installation
-------------
+============
+[QuickLisp](http://quicklisp.org) is probably the most sane way to
+install CL libraries. Ensure you have this set up and working.
+
 
 ```shell
-
-cd $QUICKLISP_HOME/.local-projects/
+cd $QUICKLISP_HOME/local-projects
 git clone git@github.com:AeroNotix/cqlcl.git
 sbcl --eval "(ql:quickload :cqlcl)"
 ```
 
-This will pull in all required dependencies.
+This will install all required dependencies.
 
 Status
 ------
 
-Currently only supports connecting and sending the OPTIONS request.
+Currently supports connecting and sending the OPTIONS request.
