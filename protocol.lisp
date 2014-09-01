@@ -75,9 +75,8 @@
 
 
 (defun make-header (opcode body stream-id)
-  (let ((h (make-instance 'header :op opcode :id stream-id
-                          :tracing nil :compression nil :body body)))
-    h))
+  (make-instance 'header :op opcode :id stream-id
+                 :tracing nil :compression nil :body body))
 
 (defun options (stream &optional (header (make-header :options nil 0)))
   (encode-value header stream))
