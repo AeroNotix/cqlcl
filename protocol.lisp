@@ -97,7 +97,7 @@
   (write-octet (as-flags (if (compression value) 1 0)
                          (if (tracing value) 1 0)) stream)
   (write-octet (id value) stream)
-  (write-octet (gethash (op value) +op-codes+) stream)
+  (write-octet (gethash (op value) +op-code-name-to-digit+) stream)
   (write-int (len value) stream))
 
 (defmethod encode-value ((value integer) stream)
