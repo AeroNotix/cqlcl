@@ -5,6 +5,7 @@
   :description "CQLv2 binary protocol"
   :serial t
   :components ((:file "package")
+               (:file "util")
                (:file "types")
                (:file "protocol")
                (:file "conn"))
