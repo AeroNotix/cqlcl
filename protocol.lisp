@@ -147,16 +147,16 @@
 (defun as-string (bv)
   (flexi-streams:octets-to-string bv :external-format :utf-8))
 
+(defun parse-uuid (stream)
+  (let ((buf (make-array 16 :element-type '(unsigned-byte 8))))
+    (read-sequence buf stream :end 16)
+    buf))
+
 (defun parse-string (stream)
   (let* ((size (read-short stream))
          (buf  (make-array size :element-type '(unsigned-byte 8))))
     (assert (= (read-sequence buf stream :end size) size))
     (as-string buf)))
-
-(defun parse-uuid (stream)
-  (let ((buf (make-array 16 :element-type '(unsigned-byte 8))))
-    (read-sequence buf stream :end 16)
-    buf))
 
 (defun parse-string-list (stream)
   (let* ((size (read-short stream)))
