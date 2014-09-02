@@ -1,8 +1,15 @@
 (defpackage :cqlcl
   (:use #:cl #:uuid #:split-sequence)
-  (:export #:parse-packet #:make-connection #:conn-options
-           #:encode-value #:make-stream-from-byte-vector
-           #:parse-string-map #:parse-uuid #:parse-consistency
-           #:+consistency-name-to-digit+
-           #:+consistency-digit-to-name+
-           #:parse-bytes #:parse-short-bytes))
+  (:export
+   #:+consistency-digit-to-name+
+   #:+consistency-name-to-digit+
+   #:conn-options
+   #:encode-value
+   #:make-connection
+   #:make-stream-from-byte-vector
+   #:parse-bytes
+   #:parse-consistency
+   #:parse-packet
+   #:parse-short-bytes
+   #:parse-string-map
+   #:parse-uuid))
