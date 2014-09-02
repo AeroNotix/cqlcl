@@ -38,3 +38,13 @@
              (is (make-stream-from-byte-vector bv))
              (parsed (parse-string-map is)))
         (hash-equal parsed smap)))))
+
+(define-test encode-decode-uuid
+  (let* ((os (flexi-streams:make-in-memory-output-stream))
+         (ims (flexi-streams:make-flexi-stream os))
+         (u   (uuid:make-v4-uuid)))
+    (encode-value u ims)
+    (let* ((bv (flexi-streams:get-output-stream-sequence os))
+           (is (make-stream-from-byte-vector bv))
+           (parsed (parse-uuid is)))
+      (assert-equalp parsed (uuid:uuid-to-byte-array u)))))

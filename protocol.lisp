@@ -153,6 +153,11 @@
     (assert (= (read-sequence buf stream :end size) size))
     (as-string buf)))
 
+(defun parse-uuid (stream)
+  (let ((buf (make-array 16 :element-type '(unsigned-byte 8))))
+    (read-sequence buf stream :end 16)
+    buf))
+
 (defun parse-string-list (stream)
   (let* ((size (read-short stream)))
     (loop for i from 1 upto size
