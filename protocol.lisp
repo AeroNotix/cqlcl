@@ -157,19 +157,26 @@
 (defun as-string (bv)
   (flexi-streams:octets-to-string bv :external-format :utf-8))
 
+(defun parse-bytes* (stream size-fn &optional (post-process #'identity))
+  (let* ((size (max (funcall size-fn stream) 0))
+         (buf  (make-array size :element-type '(unsigned-byte 8))))
+    (assert (= (read-sequence buf stream :end size) size))
+    (funcall post-process buf)))
+
 (defun parse-uuid (stream)
-  (let ((buf (make-array 16 :element-type '(unsigned-byte 8))))
-    (read-sequence buf stream :end 16)
-    buf))
+  (parse-bytes* stream (lambda (stream) (declare (ignore stream)) 16)))
+
+(defun parse-bytes (stream)
+  (parse-bytes* stream #'read-int))
+
+(defun parse-short-bytes (stream)
+  (parse-bytes* stream #'read-short))
 
 (defun parse-consistency (stream)
   (gethash (read-short stream) +consistency-digit-to-name+))
 
 (defun parse-string (stream)
-  (let* ((size (read-short stream))
-         (buf  (make-array size :element-type '(unsigned-byte 8))))
-    (assert (= (read-sequence buf stream :end size) size))
-    (as-string buf)))
+  (parse-bytes* stream #'read-short #'as-string))
 
 (defun parse-string-list (stream)
   (let* ((size (read-short stream)))
