@@ -4,4 +4,5 @@
            #:encode-value #:make-stream-from-byte-vector
            #:parse-string-map #:parse-uuid #:parse-consistency
            #:+consistency-name-to-digit+
-           #:+consistency-digit-to-name+))
+           #:+consistency-digit-to-name+
+           #:parse-bytes #:parse-short-bytes))

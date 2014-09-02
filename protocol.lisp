@@ -119,7 +119,8 @@
   (let ((len (length thing)))
     (if (> len 65535)
         (write-int len stream)
-        (write-short len stream))))
+        (write-short len stream))
+    len))
 
 (defmethod encode-value ((value integer) stream)
   (write-int value stream))
@@ -137,6 +138,10 @@
 
 (defmethod encode-value ((value null) stream)
   (write-octet 0 stream))
+
+(defmethod encode-value ((value vector) stream)
+  (write-length value stream)
+  (write-sequence value stream))
 
 (defmethod encode-value ((value symbol) stream)
   (let ((consistency (gethash value +consistency-name-to-digit+)))
