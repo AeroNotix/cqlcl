@@ -11,7 +11,7 @@ install CL libraries. Ensure you have this set up and working.
 
 ```shell
 cd $QUICKLISP_HOME/local-projects
-git clone git@github.com:AeroNotix/cqlcl.git
+git clone https://github.com/AeroNotix/cqlcl.git
 sbcl --eval "(ql:quickload :cqlcl)"
 ```
 
