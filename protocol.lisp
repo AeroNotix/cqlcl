@@ -115,15 +115,18 @@
   (write-octet (gethash (op value) +op-code-name-to-digit+) stream)
   (write-int (len value) stream))
 
+(defun write-length (thing stream)
+  (let ((len (length thing)))
+    (if (> len 65535)
+        (write-int len stream)
+        (write-short len stream))))
+
 (defmethod encode-value ((value integer) stream)
   (write-int value stream))
 
 (defmethod encode-value ((value string) stream)
-  (let ((len (length value)))
-    (if (> len 65535)
-        (write-int len stream)
-        (write-short len stream))
-    (write-string value stream)))
+  (write-length value stream)
+  (write-string value stream))
 
 (defmethod encode-value ((value hash-table) stream)
   (let ((num-entries (hash-table-count value)))
