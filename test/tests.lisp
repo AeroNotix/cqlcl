@@ -48,3 +48,15 @@
            (is (make-stream-from-byte-vector bv))
            (parsed (parse-uuid is)))
       (assert-equalp parsed (uuid:uuid-to-byte-array u)))))
+
+(define-test encode-decode-consistency
+  (maphash (lambda (k v)
+             (declare (ignore v))
+             (let* ((os (flexi-streams:make-in-memory-output-stream))
+                    (ims (flexi-streams:make-flexi-stream os)))
+               (encode-value k ims)
+               (let* ((bv (flexi-streams:get-output-stream-sequence os))
+                      (is (make-stream-from-byte-vector bv))
+                      (parsed (parse-consistency is)))
+                 (assert-equalp parsed k))))
+           +consistency-name-to-digit+))

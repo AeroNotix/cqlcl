@@ -25,7 +25,7 @@
      (:event        . #x0c))))
 (defvar +op-code-digit-to-name+
   (rev-hash +op-code-name-to-digit+))
-(defvar +consistency+
+(defvar +consistency-name-to-digit+
   (alexandria:alist-hash-table
    '((:any          . #x00)
      (:one          . #x01)
@@ -35,6 +35,8 @@
      (:all          . #x05)
      (:local-quorum . #x06)
      (:each-quorum  . #x07))))
+(defvar +consistency-digit-to-name+
+  (rev-hash +consistency-name-to-digit+))
 
 (defclass header ()
   ((ptype       :accessor ptype :initarg :ptype :initform +request+)
@@ -134,7 +136,15 @@
   (write-octet 0 stream))
 
 (defmethod encode-value ((value symbol) stream)
-  (write-octet 1 stream))
+  (let ((consistency (gethash value +consistency-name-to-digit+)))
+    (cond
+      ((eq t value)
+       (write-octet 1 stream))
+      (consistency
+       (write-short consistency stream))
+      (t
+       (error (format nil "Unknown symbol or keyword attempted to be encoded: ~A"
+                      value))))))
 
 (defmethod encode-value ((value uuid) stream)
   (write-sequence (uuid-to-byte-array value) stream))
@@ -151,6 +161,9 @@
   (let ((buf (make-array 16 :element-type '(unsigned-byte 8))))
     (read-sequence buf stream :end 16)
     buf))
+
+(defun parse-consistency (stream)
+  (gethash (read-short stream) +consistency-digit-to-name+))
 
 (defun parse-string (stream)
   (let* ((size (read-short stream))
