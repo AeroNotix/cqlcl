@@ -50,6 +50,7 @@
 
 (defgeneric ip-to-byte-array (ip)
   (:documentation "Returns a byte array representing an IP Address."))
+
 (defun parse-ip (ip delimiter byte-spec &optional (radix 10))
   (map 'vector (lambda (octet)
                  (ldb byte-spec (parse-integer octet :radix radix)))
