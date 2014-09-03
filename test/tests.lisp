@@ -86,3 +86,25 @@
              (is (make-stream-from-byte-vector sbv))
              (parsed (parse-short-bytes is)))
         (assert-equalp parsed bv))))
+
+(define-test encode-decode-short
+    (loop for i from 0 to 65535
+         do
+         (let* ((os (flexi-streams:make-in-memory-output-stream))
+                (ims (flexi-streams:make-flexi-stream os)))
+           (write-short i ims)
+           (let* ((bv (flexi-streams:get-output-stream-sequence os))
+                  (is (make-stream-from-byte-vector bv))
+                  (parsed (parse-short is)))
+             (assert-equalp parsed i)))))
+
+(define-test encode-decode-int
+    (loop for i from -65535 to 65535
+         do
+         (let* ((os (flexi-streams:make-in-memory-output-stream))
+                (ims (flexi-streams:make-flexi-stream os)))
+           (write-int i ims)
+           (let* ((bv (flexi-streams:get-output-stream-sequence os))
+                  (is (make-stream-from-byte-vector bv))
+                  (parsed (parse-int is)))
+             (assert-equalp parsed i)))))

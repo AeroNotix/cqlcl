@@ -122,9 +122,6 @@
         (write-short len stream))
     len))
 
-(defmethod encode-value ((value integer) stream)
-  (write-int value stream))
-
 (defmethod encode-value ((value string) stream)
   (write-length value stream)
   (write-string value stream))
@@ -173,6 +170,12 @@
 
 (defun parse-uuid (stream)
   (parse-bytes* stream (lambda (stream) (declare (ignore stream)) 16)))
+
+(defun parse-int (stream)
+  (read-int stream :signed? t))
+
+(defun parse-short (stream)
+  (read-short stream))
 
 (defun parse-bytes (stream)
   (parse-bytes* stream #'read-int))

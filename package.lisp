@@ -9,7 +9,11 @@
    #:make-stream-from-byte-vector
    #:parse-bytes
    #:parse-consistency
+   #:parse-int
+   #:parse-short
    #:parse-packet
+   #:write-short
+   #:write-int
    #:parse-short-bytes
    #:parse-string-map
    #:parse-uuid))
