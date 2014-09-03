@@ -168,6 +168,10 @@
     (assert (= (read-sequence buf stream :end size) size))
     (funcall post-process buf)))
 
+(defun parse-boolean (stream)
+  (let ((b (read-byte stream)))
+    (not (zerop b))))
+
 (defun parse-uuid (stream)
   (parse-bytes* stream (lambda (stream) (declare (ignore stream)) 16)))
 

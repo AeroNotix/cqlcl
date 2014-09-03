@@ -7,6 +7,7 @@
    #:encode-value
    #:make-connection
    #:make-stream-from-byte-vector
+   #:parse-boolean
    #:parse-bytes
    #:parse-consistency
    #:parse-int

@@ -121,3 +121,13 @@
                   (is (make-stream-from-byte-vector bv))
                   (parsed (parse-int is)))
              (assert-equalp parsed i)))))
+
+(define-test encode-decode-boolean
+    (dolist (el '(t nil))
+      (let* ((os (flexi-streams:make-in-memory-output-stream))
+             (ims (flexi-streams:make-flexi-stream os)))
+        (encode-value el ims)
+        (let* ((bv (flexi-streams:get-output-stream-sequence os))
+               (is (make-stream-from-byte-vector bv))
+               (parsed (parse-boolean is)))
+          (assert-equalp parsed el)))))
