@@ -87,6 +87,19 @@
              (parsed (parse-short-bytes is)))
         (assert-equalp parsed bv))))
 
+(define-test encode-decode-long-bytes
+    (let* ((n 65536)
+           (bv (make-array n :fill-pointer 0 :element-type '(unsigned-byte 8) :adjustable t))
+           (os (flexi-streams:make-in-memory-output-stream))
+           (ims (flexi-streams:make-flexi-stream os)))
+      (dotimes (x n)
+        (vector-push-extend (random 128) bv))
+      (encode-value bv ims)
+      (let* ((sbv (flexi-streams:get-output-stream-sequence os))
+             (is (make-stream-from-byte-vector sbv))
+             (parsed (parse-bytes is)))
+        (assert-equalp parsed bv))))
+
 (define-test encode-decode-short
     (loop for i from 0 to 65535
          do
