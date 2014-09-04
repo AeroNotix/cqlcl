@@ -39,25 +39,64 @@
 (define-binary-write octet  8)
 (define-binary-write short 16)
 (define-binary-write int   32)
+(define-binary-write ipv6 128)
 
 (defclass ip () ())
 
 (defclass ipv4 (ip)
   ((addr :accessor addr :initarg :addr :initform "0.0.0.0")))
 
+(defun make-ipv4 ()
+  (make-instance 'ipv4))
+
 (defclass ipv6 (ip)
   ((addr :accessor addr :initarg :addr :initform "0:0:0:0:0:0:0:0")))
+
+(defun make-ipv6 ()
+  (make-instance 'ipv6))
 
 (defgeneric ip-to-byte-array (ip)
   (:documentation "Returns a byte array representing an IP Address."))
 
-(defun parse-ip (ip delimiter byte-spec &optional (radix 10))
+(defgeneric ip-to-integer (ip)
+  (:documentation "Encodes an integer into an integer"))
+
+(defun parse-ip-from-string (ip delimiter byte-spec &optional (radix 10))
   (map 'vector (lambda (octet)
                  (ldb byte-spec (parse-integer octet :radix radix)))
        (split-sequence delimiter (addr ip))))
 
 (defmethod ip-to-byte-array ((ip ipv4))
-  (parse-ip ip #\. (byte 8 0)))
+  (parse-ip-from-string ip #\. (byte 8 0)))
 
 (defmethod ip-to-byte-array ((ip ipv6))
-  (parse-ip ip #\: (byte 16 0) 16))
+  (parse-ip-from-string ip #\: (byte 16 0) 16))
+
+(defmethod ip-to-integer ((ip ipv4))
+  (let ((ip-bv (ip-to-byte-array ip)))
+    (+ (* (elt ip-bv 0) (expt 256 3))
+       (* (elt ip-bv 1) (expt 256 2))
+       (* (elt ip-bv 2) 256)
+       (elt ip-bv 2)
+       1)))
+
+(defmethod ip-to-integer ((ip ipv6))
+  ;; TODO: properly implement this
+  -1)
+
+(defun byte-array-to-ipv4 (bytes)
+  ;; TODO: properly implement this
+  (declare (ignore bytes))
+  (make-ipv4))
+
+(defun byte-array-to-ipv6 (bytes)
+  ;; TODO: properly implement this
+  (declare (ignore bytes))
+  (make-ipv6))
+
+(defun byte-array-to-ip (bytes)
+  (ccase (length bytes)
+    (4
+     (byte-array-to-ipv4 bytes))
+    (16
+     (byte-array-to-ipv6 bytes))))

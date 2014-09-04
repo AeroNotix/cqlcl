@@ -112,6 +112,7 @@
              (assert-equalp parsed i)))))
 
 (define-test encode-decode-int
+
     (loop for i from -65535 to 65535
          do
          (let* ((os (flexi-streams:make-in-memory-output-stream))
@@ -131,3 +132,17 @@
                (is (make-stream-from-byte-vector bv))
                (parsed (parse-boolean is)))
           (assert-equalp parsed el)))))
+
+(define-test encode-decode-ip
+    ;; TODO: Fix this, implement something to compare ips
+    (let ((ip4 (make-ipv4))
+          (ip6 (make-ipv6)))
+      (dolist (el (list ip4 ip6))
+        (let* ((os (flexi-streams:make-in-memory-output-stream))
+               (ims (flexi-streams:make-flexi-stream os)))
+          (encode-value el ims)
+          (force-output ims)
+          (let* ((bv (flexi-streams:get-output-stream-sequence os))
+                 (is (make-stream-from-byte-vector bv))
+                 (parsed (parse-ip is)))
+            (assert-equalp parsed el))))))
