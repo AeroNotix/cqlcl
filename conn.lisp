@@ -10,6 +10,8 @@
   (let ((conn (usocket:socket-stream
                (usocket:socket-connect host port :element-type '(unsigned-byte 8)))))
     (options conn)
-    (force-output conn)
-    (let ((options (parse-packet (read-single-packet conn))))
-      (make-instance 'connection :conn conn :options options))))
+    (let* ((options (parse-packet (read-single-packet conn)))
+           (cxn (make-instance 'connection :conn conn :options options)))
+      (startup conn)
+      (assert (eq (parse-packet (read-single-packet conn)) :ready))
+      cxn)))
