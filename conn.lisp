@@ -26,9 +26,9 @@
 (defmethod prepare-statement ((conn synchronous-connection) (statement string))
   (let ((cxn (conn conn)))
     (prepare cxn statement)
-    (read-single-packet cxn)))
+    (parse-packet (read-single-packet cxn))))
 
 (defmethod query ((conn synchronous-connection) (statement string))
   (let* ((cxn (conn conn)))
     (query* cxn statement)
-    (read-single-packet cxn)))
+    (parse-packet (read-single-packet cxn))))
