@@ -1,18 +1,55 @@
 (in-package :cqlcl)
 
 
-;; TODO: Maybe implement it as a re-entrant parser?
-;; (defclass parser ()
-;;   ((buf :accessor buf :initform
-;;         (make-array 512 :fill-pointer 0 :adjustable t))))
+(defvar +option-id+
+  (alexandria:alist-hash-table
+   '((#x0000 . :custom)
+     (#x0001 . :ascii)
+     (#x0002 . :bigint)
+     (#x0003 . :blob)
+     (#x0004 . :boolean)
+     (#x0005 . :counter)
+     (#x0006 . :decimal)
+     (#x0007 . :double)
+     (#x0008 . :float)
+     (#x0009 . :int)
+     (#x000a . :text)
+     (#x000b . :timestamp)
+     (#x000c . :uuid)
+     (#x000d . :varchar)
+     (#x000e . :varint)
+     (#x000f . :timeuuid)
+     (#x0010 . :inet)
+     (#x0020 . :list)
+     (#x0021 . :map)
+     (#x0022 . :set))
+   :test #'equal))
 
-;; (defun make-parser ()
-;;   (make-instance 'parser))
+(defun not-implemented (stream)
+  (declare (ignore stream))
+  (error "Not implemented!"))
 
-(defmacro as-flags (&rest values)
-  `(logior
-    ,@(mapcar (lambda (value)
-                `(ldb (byte 8 0) ,value)) values)))
+(defvar +option-id-to-parser+
+  (let ((funs
+         (list
+          `(:custom    . ,#'not-implemented)
+          `(:ascii     . ,#'parse-string)
+          `(:bigint    . ,#'parse-bigint)
+          `(:blob      . ,#'parse-string)
+          `(:boolean   . ,#'parse-boolean)
+          `(:counter   . ,#'not-implemented)
+          `(:decimal   . ,#'not-implemented)
+          `(:double    . ,#'not-implemented)
+          `(:float     . ,#'not-implemented)
+          `(:int       . ,#'parse-integer)
+          `(:text      . ,#'parse-string)
+          `(:timestamp . ,#'parse-bigint)
+          `(:uuid      . ,#'parse-uuid)
+          `(:varchar   . ,#'parse-string)
+          `(:varint    . ,#'not-implemented)
+          `(:timeuuid  . ,#'parse-uuid)
+          `(:inet      . ,#'parse-ip))))
+    (alexandria:alist-hash-table funs)))
 
 (defun encode-values (values)
   ;; TODO: Implement this.  It should take a sequence of values which
@@ -23,6 +60,11 @@
 
 (defgeneric encode-value (value stream)
   (:documentation "Encodes a value into the CQL wire format."))
+
+(defmacro as-flags (&rest values)
+  `(logior
+    ,@(mapcar (lambda (value)
+                `(ldb (byte 8 0) ,value)) values)))
 
 (defmethod encode-value ((value header) stream)
   ;; TODO: Implement `define-binary-type' which would:
@@ -49,8 +91,8 @@
               (write-int (length (body value)) ims)
               (write-sequence (as-bytes (body value)) ims))
             (encode-value (body value) ims))
-        (when (eq (op value) :query)
-          (write-short 0 ims))
+        (when (eq (op value) :query) ;; TODO: Make the consistency configurable
+          (write-short 1 ims))
         (let ((bv (flexi-streams:get-output-stream-sequence os)))
           (write-int (length bv) stream)
           (write-sequence bv stream)))
@@ -110,45 +152,53 @@
 (defun as-bytes (s)
   (flexi-streams:string-to-octets s))
 
-(defun parse-bytes* (stream size-fn &optional (post-process #'identity))
-  (let* ((size (max (funcall size-fn stream) 0))
+(defun parse-bytes* (stream size &optional (post-process #'identity))
+  (print size)
+  (let* ((size (max (if (functionp size)
+                        (funcall size stream)
+                        size) 0))
          (buf  (make-array size :element-type '(unsigned-byte 8))))
     (assert (= (read-sequence buf stream :end size) size))
     (funcall post-process buf)))
 
-(defun parse-boolean (stream)
+(defun parse-boolean (stream &optional size)
+  (declare (ignore size))
   (let ((b (read-byte stream)))
     (not (zerop b))))
 
-(defun parse-uuid (stream)
-  (parse-bytes* stream (lambda (stream) (declare (ignore stream)) 16)))
+(defun parse-uuid (stream size)
+  (let ((bytes (parse-bytes* stream size)))
+    (uuid:byte-array-to-uuid bytes)))
 
-(defun parse-ip (stream)
-  (let ((size (read-octet stream)))
+(defun parse-ip (stream &optional (size (read-octet stream)))
     (assert (or (= size 4)
                 (= size 16)))
-    (let ((ip-bytes (parse-bytes* stream (lambda (stream)
-                                           (declare (ignore stream))
-                                           size))))
-      (byte-array-to-ip ip-bytes))))
+    (let ((ip-bytes (parse-bytes* stream size)))
+      (byte-array-to-ip ip-bytes)))
 
-(defun parse-int (stream)
+(defun parse-int (stream &optional size)
+  (declare (ignore size))
   (read-int stream :signed? t))
 
-(defun parse-short (stream)
+(defun parse-bigint (stream &optional size)
+  (declare (ignore size))
+  (read-bigint stream :signed? t))
+
+(defun parse-short (stream &optional size)
+  (declare (ignore size))
   (read-short stream))
 
-(defun parse-bytes (stream)
-  (parse-bytes* stream #'read-int))
+(defun parse-bytes (stream &optional (size (read-int stream)))
+  (parse-bytes* stream size))
 
-(defun parse-short-bytes (stream)
-  (parse-bytes* stream #'read-short))
+(defun parse-short-bytes (stream &optional (size (read-short stream)))
+  (parse-bytes* stream size))
 
 (defun parse-consistency (stream)
   (gethash (read-short stream) +consistency-digit-to-name+))
 
-(defun parse-string (stream)
-  (parse-bytes* stream #'read-short #'as-string))
+(defun parse-string (stream &optional (size (read-short stream)))
+  (parse-bytes* stream size #'as-string))
 
 (defun parse-string-list (stream)
   (let* ((size (read-short stream)))
@@ -170,3 +220,23 @@
 
 (defun parse-string-map (stream)
   (parse-map stream #'parse-string))
+
+(defun parse-option-list (stream)
+  (loop for x upto (read-short stream)
+     collect
+       (parse-option stream)))
+
+(defun parse-option (stream)
+  (let* ((id (gethash (read-short stream) +option-id+)))
+    (case id
+      (:custom
+       `(:custom ,(parse-string stream)))
+      (:list
+       `(:list ,(parse-option stream)))
+      (:map
+       `(:map ,(parse-option stream)
+              ,(parse-option stream)))
+      (:set
+       `(:set ,(parse-option stream)))
+      (otherwise
+       (gethash id +option-id-to-parser+)))))
