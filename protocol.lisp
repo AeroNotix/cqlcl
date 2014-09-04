@@ -51,8 +51,7 @@
     len))
 
 (defmethod encode-value ((value string) stream)
-  (write-length value stream)
-  (write-string value stream))
+  (encode-value (flexi-streams:string-to-octets value) stream))
 
 (defmethod encode-value ((value hash-table) stream)
   (let ((num-entries (hash-table-count value)))
