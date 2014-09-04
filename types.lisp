@@ -37,9 +37,10 @@
    (flexi-streams:make-in-memory-output-stream)))
 
 (define-binary-write octet  8)
-(define-binary-write short 16)
-(define-binary-write int   32)
-(define-binary-write ipv6 128)
+(define-binary-write short  16)
+(define-binary-write int    32)
+(define-binary-write bigint 512)
+(define-binary-write ipv6   128)
 
 (defclass ip () ())
 
