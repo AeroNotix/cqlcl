@@ -7,6 +7,7 @@
   :components ((:file "package")
                (:file "util")
                (:file "types")
+               (:file "headers")
                (:file "protocol")
                (:file "conn"))
   :depends-on (:pooler
