@@ -44,7 +44,11 @@
   (if (body value)
       (let* ((os (flexi-streams:make-in-memory-output-stream))
              (ims (flexi-streams:make-flexi-stream os)))
-        (encode-value (body value) ims)
+        (if (eq (op value) :prepare)
+            (progn
+              (write-int (length (body value)) ims)
+              (write-sequence (as-bytes (body value)) ims))
+            (encode-value (body value) ims))
         (let ((bv (flexi-streams:get-output-stream-sequence os)))
           (write-int (length bv) stream)
           (write-sequence bv stream)))
@@ -58,7 +62,7 @@
     len))
 
 (defmethod encode-value ((value string) stream)
-  (encode-value (flexi-streams:string-to-octets value) stream))
+  (encode-value (as-bytes value) stream))
 
 (defmethod encode-value ((value hash-table) stream)
   (let ((num-entries (hash-table-count value)))
@@ -100,6 +104,9 @@
 
 (defun as-string (bv)
   (flexi-streams:octets-to-string bv :external-format :utf-8))
+
+(defun as-bytes (s)
+  (flexi-streams:string-to-octets s))
 
 (defun parse-bytes* (stream size-fn &optional (post-process #'identity))
   (let* ((size (max (funcall size-fn stream) 0))
