@@ -32,10 +32,6 @@
          (defun ,read-fun-name (,stream &key (signed? nil))
            (read-sized ,size ,stream signed?))))))
 
-(defun make-in-memory-output-stream ()
-  (flexi-streams:make-flexi-stream
-   (flexi-streams:make-in-memory-output-stream)))
-
 (define-binary-write octet  8)
 (define-binary-write short  16)
 (define-binary-write int    32)
@@ -101,3 +97,7 @@
      (byte-array-to-ipv4 bytes))
     (16
      (byte-array-to-ipv6 bytes))))
+
+(defun make-in-memory-output-stream ()
+  (flexi-streams:make-flexi-stream
+   (flexi-streams:make-in-memory-output-stream)))
