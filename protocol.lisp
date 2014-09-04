@@ -81,10 +81,15 @@
 (defmethod encode-value ((value uuid) stream)
   (write-sequence (uuid-to-byte-array value) stream))
 
-(defmethod encode-value ((value ip) stream)
-  (let ((encoded-ip (ip-to-byte-array value)))
-    (write-octet (length encoded-ip) stream)
-    (write-sequence encoded-ip stream)))
+(defmethod encode-value ((value ipv4) stream)
+  (let ((encoded-ip (ip-to-integer value)))
+    (write-octet 4 stream)
+    (write-int encoded-ip stream)))
+
+(defmethod encode-value ((value ipv6) stream)
+  (let ((encoded-ip (ip-to-integer value)))
+    (write-octet 16 stream)
+    (write-ipv6 encoded-ip stream)))
 
 (defun as-string (bv)
   (flexi-streams:octets-to-string bv :external-format :utf-8))
@@ -101,6 +106,15 @@
 
 (defun parse-uuid (stream)
   (parse-bytes* stream (lambda (stream) (declare (ignore stream)) 16)))
+
+(defun parse-ip (stream)
+  (let ((size (read-octet stream)))
+    (assert (or (= size 4)
+                (= size 16)))
+    (let ((ip-bytes (parse-bytes* stream (lambda (stream)
+                                           (declare (ignore stream))
+                                           size))))
+      (byte-array-to-ip ip-bytes))))
 
 (defun parse-int (stream)
   (read-int stream :signed? t))
