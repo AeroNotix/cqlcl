@@ -1,7 +1,7 @@
 CQLCL
 =====
 
-A Common Lisp client to Cassandra using the native protocol
+A Common Lisp client to Cassandra using the native protocol (V2)
 
 Installation
 ============
