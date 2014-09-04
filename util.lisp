@@ -7,7 +7,7 @@
         (k (gensym))
         (v (gensym)))
     `(let* ((,ht-orig ,ht)
-            (,ht-sym (make-hash-table :size (hash-table-count ,ht))))
+            (,ht-sym (make-hash-table :size (hash-table-count ,ht) :test #'equal)))
        (maphash (lambda (,k ,v)
                   (setf (gethash ,v ,ht-sym) ,k)) ,ht-orig)
        ,ht-sym)))
