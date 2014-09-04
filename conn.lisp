@@ -20,7 +20,15 @@
 (defgeneric prepare-statement (connection statement)
   (:documentation "Prepares a statement."))
 
+(defgeneric query (connection statement)
+  (:documentation "Executes a query."))
+
 (defmethod prepare-statement ((conn synchronous-connection) (statement string))
   (let ((cxn (conn conn)))
     (prepare cxn statement)
+    (read-single-packet cxn)))
+
+(defmethod query ((conn synchronous-connection) (statement string))
+  (let* ((cxn (conn conn)))
+    (query* cxn statement)
     (read-single-packet cxn)))

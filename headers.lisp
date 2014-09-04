@@ -75,6 +75,11 @@
   (encode-value header stream)
   (force-output stream))
 
+(defun query* (stream string &optional (header (make-instance 'header :op :query)))
+  (setf (body header) string)
+  (encode-value header stream)
+  (force-output stream))
+
 (defun parse-header (header)
   (let* ((op-code (elt header +packet-type-index+))
          (resp-type (gethash op-code +op-code-digit-to-name+)))
