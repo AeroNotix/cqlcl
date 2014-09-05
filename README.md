@@ -20,4 +20,7 @@ This will install all required dependencies.
 Status
 ------
 
-Currently supports connecting and sending the OPTIONS request.
+Supports making connections and executing synchronous queries. Most
+types are implemented but not the collection column types.
+
+Preparing queries works, but not executing prepared statements.
