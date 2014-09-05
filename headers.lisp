@@ -135,26 +135,40 @@
            (parse-row col-specs stream)))))
 
 (defun parse-rows (stream)
-  (let* ((flags (read-int stream))
-         (col-count (read-int stream))
-         (global-tables-spec (when (row-flag-set? flags :global-tables-spec)
-                               (list (parse-string stream)
-                                     (parse-string stream))))
-         (col-specs (loop for i upto (1- col-count)
-                       collect
-                         (parse-colspec (not global-tables-spec) stream)))
-         (row-data (parse-rows* col-specs stream)))
-    row-data))
+  (multiple-value-bind (col-count global-tables-spec) (parse-metadata stream)
+    (let ((col-specs (parse-colspecs global-tables-spec col-count stream)))
+      (parse-rows* col-specs stream))))
 
-(defun parse-result-packet (packet)
-  (let* ((packet-stream (make-stream-from-byte-vector packet))
-         (res-int (read-int packet-stream))
+(defun parse-prepared (stream)
+  (let* ((size (parse-short stream))
+         (qid (read-sized (* size 8) stream)))
+    (multiple-value-bind (col-count global-tables-spec) (parse-metadata stream)
+      (let ((col-specs (parse-colspecs global-tables-spec col-count stream)))
+        (list qid col-specs)))))
+
+(defun parse-result-packet (stream)
+  (let* ((res-int (read-int stream))
          (res-type (gethash res-int +result-type+)))
     (case res-type
       (:set-keyspace t)
       (:rows
-       (parse-rows packet-stream))
-      (otherwise packet))))
+       (parse-rows stream))
+      (:prepared
+       (parse-prepared stream))
+      (otherwise stream))))
+
+(defun parse-metadata (stream)
+  (let* ((flags (read-int stream))
+         (col-count (read-int stream))
+         (global-tables-spec (when (row-flag-set? flags :global-tables-spec)
+                               (list (parse-string stream)
+                                     (parse-string stream)))))
+    (values col-count global-tables-spec flags)))
+
+(defun parse-colspecs (global-tables-spec col-count stream)
+  (loop for i upto (1- col-count)
+     collect
+       (parse-colspec (not global-tables-spec) stream)))
 
 (defun parse-packet (packet)
   (let* ((stream (make-stream-from-byte-vector packet))

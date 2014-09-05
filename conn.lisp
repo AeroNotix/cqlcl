@@ -4,6 +4,7 @@
 (defclass synchronous-connection ()
   ;; TODO maybe this should hold an instance of a parser
   ((conn :accessor conn :initarg :conn)
+   (prepared-queries :accessor pqs :initform (make-hash-table :test #'equal))
    (conn-options :accessor conn-options :initarg :options)))
 
 (defun make-connection (&key (synchronous t) (host "localhost") (port 9042)); TODO: &key version compression)
@@ -24,9 +25,12 @@
   (:documentation "Executes a query."))
 
 (defmethod prepare-statement ((conn synchronous-connection) (statement string))
-  (let ((cxn (conn conn)))
-    (prepare cxn statement)
-    (parse-packet (read-single-packet cxn))))
+  (when (not (gethash statement (pqs conn)))
+    (let ((cxn (conn conn)))
+      (prepare cxn statement)
+      (let ((prep-results (parse-packet (read-single-packet cxn))))
+        (setf (gethash statement (pqs conn)) prep-results))))
+  (values))
 
 (defmethod query ((conn synchronous-connection) (statement string))
   (let* ((cxn (conn conn)))
