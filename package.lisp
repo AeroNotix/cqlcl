@@ -20,4 +20,5 @@
    #:write-int
    #:parse-short-bytes
    #:parse-string-map
+   #:parse-string
    #:parse-uuid))
