@@ -203,7 +203,7 @@
      collect
        (parse-option stream)))
 
-(defvar +option-id-to-parser+
+(defparameter +option-id-to-parser+
   (let ((funs
          `((:custom    . ,#'not-implemented)
            (:ascii     . ,#'parse-string)
