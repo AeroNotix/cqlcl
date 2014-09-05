@@ -29,28 +29,6 @@
   (declare (ignore stream))
   (error "Not implemented!"))
 
-(defvar +option-id-to-parser+
-  (let ((funs
-         (list
-          `(:custom    . ,#'not-implemented)
-          `(:ascii     . ,#'parse-string)
-          `(:bigint    . ,#'parse-bigint)
-          `(:blob      . ,#'parse-string)
-          `(:boolean   . ,#'parse-boolean)
-          `(:counter   . ,#'not-implemented)
-          `(:decimal   . ,#'not-implemented)
-          `(:double    . ,#'not-implemented)
-          `(:float     . ,#'not-implemented)
-          `(:int       . ,#'parse-integer)
-          `(:text      . ,#'parse-string)
-          `(:timestamp . ,#'parse-bigint)
-          `(:uuid      . ,#'parse-uuid)
-          `(:varchar   . ,#'parse-string)
-          `(:varint    . ,#'not-implemented)
-          `(:timeuuid  . ,#'parse-uuid)
-          `(:inet      . ,#'parse-ip))))
-    (alexandria:alist-hash-table funs)))
-
 (defun encode-values (values)
   ;; TODO: Implement this.  It should take a sequence of values which
   ;; then should be MAPCAR'd over to `encode-value' into a stream and
@@ -224,6 +202,28 @@
   (loop for x upto (read-short stream)
      collect
        (parse-option stream)))
+
+(defvar +option-id-to-parser+
+  (let ((funs
+         (list
+          `(:custom    . ,#'not-implemented)
+          `(:ascii     . ,#'parse-string)
+          `(:bigint    . ,#'parse-bigint)
+          `(:blob      . ,#'parse-string)
+          `(:boolean   . ,#'parse-boolean)
+          `(:counter   . ,#'not-implemented)
+          `(:decimal   . ,#'not-implemented)
+          `(:double    . ,#'not-implemented)
+          `(:float     . ,#'not-implemented)
+          `(:int       . ,#'parse-integer)
+          `(:text      . ,#'parse-string)
+          `(:timestamp . ,#'parse-bigint)
+          `(:uuid      . ,#'parse-uuid)
+          `(:varchar   . ,#'parse-string)
+          `(:varint    . ,#'not-implemented)
+          `(:timeuuid  . ,#'parse-uuid)
+          `(:inet      . ,#'parse-ip))))
+    (alexandria:alist-hash-table funs)))
 
 (defun parse-option (stream)
   (let* ((id (gethash (read-short stream) +option-id+)))
