@@ -11,11 +11,11 @@
   (let ((conn (usocket:socket-stream
                (usocket:socket-connect host port :element-type '(unsigned-byte 8)))))
     (options conn)
-    (let* ((options (parse-packet (read-single-packet conn)))
+    (let* ((options (read-single-packet conn))
            (cxn-type (if synchronous 'synchronous-connection 'connection))
            (cxn (make-instance cxn-type :conn conn :options options)))
       (startup conn)
-      (assert (eq (parse-packet (read-single-packet conn)) :ready))
+      (assert (eq (read-single-packet conn) :ready))
       cxn)))
 
 (defgeneric prepare-statement (connection statement)
@@ -28,11 +28,11 @@
   (when (not (gethash statement (pqs conn)))
     (let ((cxn (conn conn)))
       (prepare cxn statement)
-      (let ((prep-results (parse-packet (read-single-packet cxn))))
+      (let ((prep-results (read-single-packet cxn)))
         (setf (gethash statement (pqs conn)) prep-results))))
   (values))
 
 (defmethod query ((conn synchronous-connection) (statement string))
   (let* ((cxn (conn conn)))
     (query* cxn statement)
-    (parse-packet (read-single-packet cxn))))
+    (read-single-packet cxn)))

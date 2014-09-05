@@ -90,11 +90,6 @@
   (encode-value header stream)
   (force-output stream))
 
-(defun parse-header (header)
-  (let* ((op-code (elt header +packet-type-index+))
-         (resp-type (gethash op-code +op-code-digit-to-name+)))
-    resp-type))
-
 (defun parse-supported-packet (stream)
   (parse-string-multimap stream))
 
@@ -170,25 +165,18 @@
      collect
        (parse-colspec (not global-tables-spec) stream)))
 
-(defun parse-packet (packet)
-  (let* ((stream (make-stream-from-byte-vector packet))
-         (header-type (parse-header (parse-bytes stream 8))))
-    (ccase header-type
-      (:supported
-       (parse-supported-packet stream))
-      (:error
-       (parse-error-packet stream))
-      (:ready :ready)
-      (:result
-       (parse-result-packet stream)))))
+(defun parse-header (header)
+  (let* ((op-code (elt header +packet-type-index+))
+         (resp-type (gethash op-code +op-code-digit-to-name+)))
+    resp-type))
 
 (defun read-single-packet (conn)
-  (let ((out (make-array 512 :fill-pointer 0 :adjustable t)))
-    (do ((bite (read-byte conn) (read-byte conn)))
-        ((if (not (listen conn))
-             (progn
-               (vector-push-extend bite out)
-               t)
-             nil))
-      (vector-push-extend bite out))
-    out))
+  (let* ((header-type (parse-header (parse-bytes conn 8))))
+    (ccase header-type
+      (:supported
+       (parse-supported-packet conn))
+      (:error
+       (parse-error-packet conn))
+      (:ready :ready)
+      (:result
+       (parse-result-packet conn)))))

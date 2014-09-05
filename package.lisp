@@ -15,10 +15,10 @@
    #:parse-int
    #:parse-ip
    #:parse-short
-   #:parse-packet
    #:write-short
    #:write-int
    #:parse-short-bytes
    #:parse-string-map
    #:parse-string
-   #:parse-uuid))
+   #:parse-uuid
+   #:read-single-packet))
