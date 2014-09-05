@@ -165,7 +165,7 @@
   (let ((b (read-byte stream)))
     (not (zerop b))))
 
-(defun parse-uuid (stream size)
+(defun parse-uuid (stream &optional (size 16))
   (let ((bytes (parse-bytes* stream size)))
     (uuid:byte-array-to-uuid bytes)))
 
