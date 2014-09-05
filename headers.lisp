@@ -125,7 +125,8 @@
   (let ((row nil))
     (loop for (col-name parser) in col-specs
        do (let ((size (parse-int stream)))
-           (push (funcall parser stream size) row)))
+            (push (when (plusp size)
+                    (funcall parser stream size)) row)))
     (reverse row)))
 
 (defun parse-rows* (col-specs stream)
