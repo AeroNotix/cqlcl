@@ -148,10 +148,10 @@
     (uuid:byte-array-to-uuid bytes)))
 
 (defun parse-ip (stream &optional (size (read-octet stream)))
-    (assert (or (= size 4)
-                (= size 16)))
-    (let ((ip-bytes (parse-bytes* stream size)))
-      (byte-array-to-ip ip-bytes)))
+  (assert (or (= size 4)
+              (= size 16)))
+  (let ((ip-bytes (parse-bytes* stream size)))
+    (byte-array-to-ip ip-bytes)))
 
 (defun parse-int (stream &optional size)
   (declare (ignore size))
