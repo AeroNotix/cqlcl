@@ -37,7 +37,7 @@
     ,@(mapcar (lambda (value)
                 `(ldb (byte 8 0) ,value)) values)))
 
-(defmethod encode-value ((value header) stream)
+(defmethod encode-value :around ((value header) stream)
   ;; TODO: Implement `define-binary-type' which would:
   ;; (define-binary-type header
   ;;  ((version/request-type (flags (0 version)
@@ -49,25 +49,37 @@
   ;;
   ;; And that would generate a `DEFCLASS' to hold the values as well
   ;; as the requisite parsing code (as below).
-  (write-octet (as-flags (ptype value) (vsn value)) stream)
-  (write-octet (as-flags (if (compression value) 1 0)
-                         (if (tracing value) 1 0)) stream)
-  (write-octet (id value) stream)
-  (write-octet (gethash (op value) +op-code-name-to-digit+) stream)
-  (if (body value)
-      (let* ((os (flexi-streams:make-in-memory-output-stream))
-             (ims (flexi-streams:make-flexi-stream os)))
-        (if (member (op value) (list :prepare :query))
-            (progn
-              (write-int (length (body value)) ims)
-              (write-sequence (as-bytes (body value)) ims))
-            (encode-value (body value) ims))
-        (when (eq (op value) :query) ;; TODO: Make the consistency configurable
-          (write-short 1 ims))
-        (let ((bv (flexi-streams:get-output-stream-sequence os)))
-          (write-int (length bv) stream)
-          (write-sequence bv stream)))
-      (write-int 0 stream)))
+  (let* ((os (flexi-streams:make-in-memory-output-stream))
+         (ims (flexi-streams:make-flexi-stream os)))
+    (write-octet (as-flags (ptype value) (vsn value)) stream)
+    (write-octet (as-flags (if (compression value) 1 0)
+                           (if (tracing value) 1 0)) stream)
+    (write-octet (id value) stream)
+    (write-octet (gethash (op value) +op-code-name-to-digit+) stream)
+    (call-next-method value ims)
+    (force-output ims)
+    (let ((bv (flexi-streams:get-output-stream-sequence os)))
+      (write-int (length bv) stream)
+      (write-sequence bv stream))
+    (force-output stream)))
+
+(defmethod encode-value ((header options-header) stream)
+  (declare (ignore header stream)))
+
+(defmethod encode-value ((header startup-header) stream)
+  (encode-value (opts header) stream))
+
+(defmethod encode-value ((header query-header) stream)
+  (let ((c (gethash (consistency header) +consistency-name-to-digit+)))
+    (write-int (length (qs header)) stream)
+    (write-sequence (as-bytes (qs header)) stream)
+    (write-short c stream)))
+
+(defmethod encode-value ((header prepare-header) stream)
+  (let ((c (gethash (consistency header) +consistency-name-to-digit+)))
+    (write-int (length (ps header)) stream)
+    (write-sequence (as-bytes (ps header)) stream)
+    (write-short c stream)))
 
 (defun write-length (thing stream)
   (let ((len (length thing)))

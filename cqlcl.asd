@@ -6,6 +6,7 @@
   :serial t
   :components ((:file "package")
                (:file "util")
+               (:file "constants")
                (:file "types")
                (:file "headers")
                (:file "protocol")
