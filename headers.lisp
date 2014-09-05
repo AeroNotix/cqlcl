@@ -95,14 +95,12 @@
          (resp-type (gethash op-code +op-code-digit-to-name+)))
     resp-type))
 
-(defun parse-supported-packet (packet)
-  (let ((packet-stream (make-stream-from-byte-vector packet)))
-    (parse-string-multimap packet-stream)))
+(defun parse-supported-packet (stream)
+  (parse-string-multimap stream))
 
-(defun parse-error-packet (packet)
-  (let* ((packet-stream (make-stream-from-byte-vector packet))
-         (error-code (read-int packet-stream))
-         (error-msg (parse-string packet-stream)))
+(defun parse-error-packet (stream)
+  (let* ((error-code (read-int stream))
+         (error-msg (parse-string stream)))
     (print error-msg)
     (error 'error-response :code error-code :msg error-msg)))
 
@@ -159,15 +157,16 @@
       (otherwise packet))))
 
 (defun parse-packet (packet)
-  (let ((header-type (parse-header (subseq packet 0 +header-length+))))
+  (let* ((stream (make-stream-from-byte-vector packet))
+         (header-type (parse-header (parse-bytes stream 8))))
     (ccase header-type
       (:supported
-       (parse-supported-packet (subseq packet 8)))
+       (parse-supported-packet stream))
       (:error
-       (parse-error-packet (subseq packet 8)))
+       (parse-error-packet stream))
       (:ready :ready)
       (:result
-       (parse-result-packet (subseq packet 8))))))
+       (parse-result-packet stream)))))
 
 (defun read-single-packet (conn)
   (let ((out (make-array 512 :fill-pointer 0 :adjustable t)))
