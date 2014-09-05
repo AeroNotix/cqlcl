@@ -153,7 +153,6 @@
   (flexi-streams:string-to-octets s))
 
 (defun parse-bytes* (stream size &optional (post-process #'identity))
-  (print size)
   (let* ((size (max (if (functionp size)
                         (funcall size stream)
                         size) 0))

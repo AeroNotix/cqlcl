@@ -158,7 +158,6 @@
       (otherwise packet))))
 
 (defun parse-packet (packet)
-  (print packet)
   (let ((header-type (parse-header (subseq packet 0 +header-length+))))
     (ccase header-type
       (:supported
