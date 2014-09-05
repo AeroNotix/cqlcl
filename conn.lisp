@@ -7,10 +7,12 @@
    (prepared-queries :accessor pqs :initform (make-hash-table :test #'equal))
    (conn-options :accessor conn-options :initarg :options)))
 
-(defun make-connection (&key (synchronous t) (host "localhost") (port 9042)); TODO: &key version compression)
-  (let* ((conn (usocket:socket-stream
+(defun make-connection (&key (connection-type :sync) (host "localhost") (port 9042)); TODO: &key version compression)
+  (let* ((c-types '((:sync . synchronous-connection)
+                    (:async . connection)))
+         (conn (usocket:socket-stream
                 (usocket:socket-connect host port :element-type '(unsigned-byte 8))))
-         (cxn-type (if synchronous 'synchronous-connection 'connection))
+         (cxn-type (cdr (assoc connection-type c-types)))
          (cxn (make-instance cxn-type :conn conn)))
     (options cxn)
     (let* ((options (read-single-packet conn)))
