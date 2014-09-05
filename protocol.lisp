@@ -29,13 +29,6 @@
   (declare (ignore stream))
   (error "Not implemented!"))
 
-(defun encode-values (values)
-  ;; TODO: Implement this.  It should take a sequence of values which
-  ;; then should be MAPCAR'd over to `encode-value' into a stream and
-  ;; returned either as a BYTE-VECTOR or a STREAM.
-  (declare (ignore values))
-  (make-in-memory-output-stream))
-
 (defgeneric encode-value (value stream)
   (:documentation "Encodes a value into the CQL wire format."))
 
