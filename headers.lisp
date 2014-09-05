@@ -28,28 +28,6 @@
 (defclass prepare-header (header)
   ((prepare-string :accessor ps :initarg :ps :initform (error "Query string required."))))
 
-(defun options (conn)
-  (let ((header (make-instance 'options-header :op :options))
-        (cxn (conn conn)))
-    (encode-value header cxn)))
-
-(defun startup (conn &key (version "3.0.0") (compression nil))
-  (declare (ignore compression)) ;; TODO: Implement compression
-  (let* ((options (alexandria:alist-hash-table
-                   `(("CQL_VERSION" . ,version))))
-         (header (make-instance 'startup-header :op :startup :opts options))
-         (cxn (conn conn)))
-    (encode-value header cxn)))
-
-(defun prepare (conn string)
-  (let ((cxn (conn conn))
-        (header (make-instance 'prepare-header :op :prepare :ps string)))
-  (encode-value header cxn)))
-
-(defun query* (stream string values)
-  (let ((header (make-instance 'query-header :op :query :qs string)))
-    (encode-value header stream)))
-
 (defun parse-supported-packet (stream)
   (parse-string-multimap stream))
 

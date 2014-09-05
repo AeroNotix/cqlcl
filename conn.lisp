@@ -21,30 +21,42 @@
       (assert (eq (read-single-packet conn) :ready))
       cxn)))
 
+(defgeneric options (connection)
+  (:documentation "Sends an option request."))
+
+(defgeneric startup (connection &key version compression)
+  (:documentation "Sends a startup request."))
+
 (defgeneric prepare-statement (connection statement)
   (:documentation "Prepares a statement."))
 
-(defgeneric query (connection statement &rest values)
+(defgeneric query (connection statement)
   (:documentation "Executes a query."))
+
+(defmethod startup ((conn synchronous-connection) &key (version "3.0.0") (compression nil))
+  (declare (ignore compression)) ;; TODO: Implement compression
+  (let* ((options (alexandria:alist-hash-table
+                   `(("CQL_VERSION" . ,version))))
+         (header (make-instance 'startup-header :op :startup :opts options))
+         (cxn (conn conn)))
+    (encode-value header cxn)))
+
+(defmethod options ((conn synchronous-connection))
+  (let ((header (make-instance 'options-header :op :options))
+        (cxn (conn conn)))
+    (encode-value header cxn)))
 
 (defmethod prepare-statement ((conn synchronous-connection) (statement string))
   (when (not (gethash statement (pqs conn)))
-    (let ((cxn (conn conn)))
-      (prepare conn statement)
+    (let ((cxn (conn conn))
+          (header (make-instance 'prepare-header :op :prepare :ps statement)))
+      (encode-value header cxn)
       (let ((prep-results (read-single-packet cxn)))
         (setf (gethash statement (pqs conn)) prep-results))))
   (values))
 
-(defmethod query ((conn synchronous-connection) (statement string) &rest values)
-  (let* ((cxn (conn conn)))
-    (query* cxn statement values)
+(defmethod query ((conn synchronous-connection) (statement string))
+  (let ((cxn (conn conn))
+        (header (make-instance 'query-header :op :query :qs statement)))
+    (encode-value header cxn)
     (read-single-packet cxn)))
-
-;; (defmethod execute ((conn synchronous-connection) (statement string))
-;;   (let ((cxn (conn conn))
-;;         (id  (first (gethash statement (pqs conn)))))
-;;     (if (not id)
-;;         (progn
-;;           (prepare conn statement)
-;;           (execute conn statement))
-
