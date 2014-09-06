@@ -27,7 +27,7 @@
 (defgeneric startup (connection &key version compression)
   (:documentation "Sends a startup request."))
 
-(defgeneric prepare-statement (connection statement)
+(defgeneric prepare (connection statement)
   (:documentation "Prepares a statement."))
 
 (defgeneric query (connection statement)
@@ -46,7 +46,7 @@
         (cxn (conn conn)))
     (encode-value header cxn)))
 
-(defmethod prepare-statement ((conn synchronous-connection) (statement string))
+(defmethod prepare ((conn synchronous-connection) (statement string))
   (when (not (gethash statement (pqs conn)))
     (let ((cxn (conn conn))
           (header (make-instance 'prepare-header :op :prepare :ps statement)))
