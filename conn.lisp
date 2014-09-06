@@ -31,7 +31,7 @@
   (:documentation "Prepares a statement."))
 
 (defgeneric query (connection statement)
-  (:documentation "Executes a query."))
+  (:documentation "Executes a query with no bound values."))
 
 (defmethod startup ((conn synchronous-connection) &key (version "3.0.0") (compression nil))
   (declare (ignore compression)) ;; TODO: Implement compression
