@@ -33,6 +33,9 @@
 (defgeneric query (connection statement)
   (:documentation "Executes a query with no bound values."))
 
+(defgeneric execute (connection statement &rest values)
+  (:documentation "Executes a prepared statement with bound values."))
+
 (defmethod startup ((conn synchronous-connection) &key (version "3.0.0") (compression nil))
   (declare (ignore compression)) ;; TODO: Implement compression
   (let* ((options (alexandria:alist-hash-table
@@ -58,5 +61,12 @@
 (defmethod query ((conn synchronous-connection) (statement string))
   (let ((cxn (conn conn))
         (header (make-instance 'query-header :op :query :qs statement)))
+    (encode-value header cxn)
+    (read-single-packet cxn)))
+
+(defmethod execute ((conn synchronous-connection) (statement string) &rest values)
+  (let* ((cxn (conn conn))
+         (qid (gethash statement (pqs conn)))
+         (header (make-instance 'execute-header :op :execute :qid (qid qid) :vals values)))
     (encode-value header cxn)
     (read-single-packet cxn)))

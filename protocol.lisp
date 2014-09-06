@@ -57,6 +57,14 @@
     (write-sequence (as-bytes (ps header)) stream)
     (write-short c stream)))
 
+(defmethod encode-value ((header execute-header) stream)
+  (let ((c (gethash (consistency header) +consistency-name-to-digit+))
+        (qid (qid header)))
+    (encode-value qid stream)
+    (write-short (length (vals header)) stream)
+    ;; TODO: Write values here
+    (write-short c stream)))
+
 (defun write-length (thing stream)
   (let ((len (length thing)))
     (if (> len 65535)

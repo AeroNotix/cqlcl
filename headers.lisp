@@ -27,6 +27,17 @@
 
 (defclass prepare-header (header)
   ((prepare-string :accessor ps :initarg :ps :initform (error "Query string required."))))
+(defclass execute-header (header)
+  ((query-id :accessor qid  :initarg :qid :initform (error "Prepared Query ID required."))
+   (values   :accessor vals :initarg :vals  :initform (error "Values required."))))
+
+(defclass prepared-query ()
+  ((query-string :accessor qs  :initarg :qs)
+   (query-id     :accessor qid :initarg :qid)
+   (col-specs    :accessor cs  :initarg :cs)))
+
+(defmethod print-object ((pq prepared-query) stream)
+  (format stream "#<PREPARED-QUERY> {~A}" (uuid:byte-array-to-uuid (qid pq))))
 
 (defun parse-supported-packet (stream)
   (parse-string-multimap stream))
@@ -74,10 +85,11 @@
 
 (defun parse-prepared (stream)
   (let* ((size (parse-short stream))
-         (qid (read-sized (* size 8) stream)))
+         (qid (make-array size :element-type '(unsigned-byte 8))))
+    (assert (= (read-sequence qid stream) size))
     (multiple-value-bind (col-count global-tables-spec) (parse-metadata stream)
       (let ((col-specs (parse-colspecs global-tables-spec col-count stream)))
-        (list qid col-specs)))))
+        (make-instance 'prepared-query :qid qid :cs col-specs)))))
 
 (defun parse-result-packet (stream)
   (let* ((res-int (read-int stream))
