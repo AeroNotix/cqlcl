@@ -20,7 +20,6 @@
       (startup cxn)
       (assert (eq (read-single-packet conn) :ready))
       cxn)))
-
 (defgeneric options (connection)
   (:documentation "Sends an option request."))
 
@@ -55,6 +54,7 @@
           (header (make-instance 'prepare-header :op :prepare :ps statement)))
       (encode-value header cxn)
       (let ((prep-results (read-single-packet cxn)))
+        (setf (qs prep-results) statement)
         (setf (gethash statement (pqs conn)) prep-results))))
   (values))
 
