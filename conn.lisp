@@ -3,9 +3,9 @@
 
 (defclass synchronous-connection ()
   ;; TODO maybe this should hold an instance of a parser
-  ((conn :accessor conn :initarg :conn)
-   (prepared-queries :accessor pqs :initform (make-hash-table :test #'equal))
-   (conn-options :accessor conn-options :initarg :options)))
+  ((conn             :accessor conn         :initarg :conn)
+   (prepared-queries :accessor pqs          :initform (make-hash-table :test #'equal))
+   (conn-options     :accessor conn-options :initarg :options)))
 
 (defun make-connection (&key (connection-type :sync) (host "localhost") (port 9042)); TODO: &key version compression)
   (let* ((c-types '((:sync . synchronous-connection)
@@ -20,6 +20,7 @@
       (startup cxn)
       (assert (eq (read-single-packet conn) :ready))
       cxn)))
+
 (defgeneric options (connection)
   (:documentation "Sends an option request."))
 

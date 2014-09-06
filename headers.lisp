@@ -29,8 +29,8 @@
   ((prepare-string :accessor ps :initarg :ps :initform (error "Prepare string required."))))
 
 (defclass execute-header (header)
-  ((query-id :accessor qid  :initarg :qid :initform (error "Prepared Query ID required."))
-   (values   :accessor vals :initarg :vals  :initform (error "Values required."))))
+  ((query-id :accessor qid  :initarg :qid  :initform (error "Prepared Query ID required."))
+   (values   :accessor vals :initarg :vals :initform (error "Values required."))))
 
 (defclass prepared-query ()
   ((query-string :accessor qs  :initarg :qs)
