@@ -101,6 +101,8 @@
        (parse-rows stream))
       (:prepared
        (parse-prepared stream))
+      (:void
+       (values))
       (otherwise stream))))
 
 (defun parse-metadata (stream)

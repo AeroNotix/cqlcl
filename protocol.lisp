@@ -1,6 +1,8 @@
 (in-package :cqlcl)
 
 
+(defparameter *write-wide-lengths* nil)
+
 (defun not-implemented (stream)
   (declare (ignore stream))
   (error "Not implemented!"))
@@ -12,6 +14,11 @@
   `(logior
     ,@(mapcar (lambda (value)
                 `(ldb (byte 8 0) ,value)) values)))
+
+(defun encode-values (values stream)
+  (let ((*write-wide-lengths* t))
+    (mapcar (lambda (value)
+              (encode-value value stream)) values)))
 
 (defmethod encode-value :around ((value header) stream)
   ;; TODO: Implement `define-binary-type' which would:
@@ -62,15 +69,19 @@
         (qid (qid header)))
     (encode-value qid stream)
     (write-short (length (vals header)) stream)
-    ;; TODO: Write values here
+    (encode-values (vals header) stream)
     (write-short c stream)))
 
 (defun write-length (thing stream)
   (let ((len (length thing)))
-    (if (> len 65535)
+    (if (or (> len 65535) *write-wide-lengths*)
         (write-int len stream)
         (write-short len stream))
     len))
+
+(defmethod encode-value ((value integer) stream)
+  (write-int 4 stream)
+  (write-int value stream))
 
 (defmethod encode-value ((value string) stream)
   (encode-value (as-bytes value) stream))
@@ -83,6 +94,8 @@
                (encode-value v stream)) value)))
 
 (defmethod encode-value ((value null) stream)
+  (when *write-wide-lengths*
+    (write-int 1 stream))
   (write-octet 0 stream))
 
 (defmethod encode-value ((value vector) stream)
@@ -91,6 +104,8 @@
 
 (defmethod encode-value ((value symbol) stream)
   (let ((consistency (gethash value +consistency-name-to-digit+)))
+    (when *write-wide-lengths*
+      (write-int 1 stream))
     (cond
       ((eq t value)
        (write-octet 1 stream))
@@ -105,12 +120,16 @@
 
 (defmethod encode-value ((value ipv4) stream)
   (let ((encoded-ip (ip-to-integer value)))
-    (write-octet 4 stream)
+    (if *write-wide-lengths*
+        (write-int 4 stream)
+        (write-octet 4 stream))
     (write-int encoded-ip stream)))
 
 (defmethod encode-value ((value ipv6) stream)
   (let ((encoded-ip (ip-to-integer value)))
-    (write-octet 16 stream)
+    (if *write-wide-lengths*
+        (write-int 16 stream)
+        (write-octet 16 stream))
     (write-ipv6 encoded-ip stream)))
 
 (defun as-string (bv)
