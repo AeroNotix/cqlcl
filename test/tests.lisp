@@ -191,5 +191,9 @@
     (query cxn create-keyspace)
     (query cxn create-table)
     (is (not (query cxn (format nil "SELECT * FROM ~a.test" table-name))))
+    (is (not (prepare cxn (format nil "INSERT INTO ~a.test (id, name, value) VALUES(?, ?, ?)" table-name))))
+    (is (not (execute cxn (format nil "INSERT INTO ~a.test (id, name, value) VALUES(?, ?, ?)" table-name)
+             (uuid:make-v4-uuid) "HELLO" 123)))
+
     (query cxn drop-table)
     (query cxn drop-keyspace)))

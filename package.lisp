@@ -4,6 +4,8 @@
    ;; API
    #:make-connection
    #:query
+   #:prepare
+   #:execute
 
    ;; Exported for tests
    #:ip=
