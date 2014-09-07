@@ -6,6 +6,7 @@
    #:query
    #:prepare
    #:execute
+   #:options
 
    ;; Exported for tests
    #:ip=
