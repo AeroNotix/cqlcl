@@ -225,7 +225,7 @@
            (:decimal   . ,#'not-implemented)
            (:double    . ,#'not-implemented)
            (:float     . ,#'not-implemented)
-           (:int       . ,#'parse-integer)
+           (:int       . ,#'parse-int)
            (:text      . ,#'parse-string)
            (:timestamp . ,#'parse-bigint)
            (:uuid      . ,#'parse-uuid)
