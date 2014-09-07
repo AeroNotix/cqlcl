@@ -116,6 +116,9 @@
                       value))))))
 
 (defmethod encode-value ((value uuid) stream)
+  (if *write-wide-lengths*
+      (write-int 16 stream)
+      (write-short 16 stream))
   (write-sequence (uuid-to-byte-array value) stream))
 
 (defmethod encode-value ((value ipv4) stream)
