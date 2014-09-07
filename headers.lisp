@@ -37,9 +37,6 @@
   ((code :initarg :code :reader :text :accessor code)
    (msg  :initarg :msg  :reader :msg :accessor msg)))
 
-(defmethod print-object ((pq prepared-query) stream)
-  (format stream "#<PREPARED-QUERY> {~A}" (uuid:byte-array-to-uuid (qid pq))))
-
 (defun parse-schema-change (stream)
   (values t (format nil "~A: ~{~A~^.~}"
                     (parse-string stream)
