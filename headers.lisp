@@ -40,6 +40,14 @@
 (defmethod print-object ((pq prepared-query) stream)
   (format stream "#<PREPARED-QUERY> {~A}" (uuid:byte-array-to-uuid (qid pq))))
 
+(defun parse-schema-change (stream)
+  (values t (format nil "~A: ~{~A~^.~}"
+                    (parse-string stream)
+                    (remove-if #'empty?
+                               (list
+                                (parse-string stream)
+                                (parse-string stream))))))
+
 (defun parse-supported-packet (stream)
   (parse-string-multimap stream))
 
@@ -103,6 +111,8 @@
        (parse-prepared stream))
       (:void
        (values))
+      (:schema-change
+       (parse-schema-change stream))
       (otherwise stream))))
 
 (defun parse-metadata (stream)
