@@ -61,3 +61,28 @@ API
  (DF0922E4-BB82-4C59-A32C-CBFD859CC3AD "HELLO" 123)
  (43B0683F-8372-4BFC-B2CB-93706360A2D7 "HELLO" 123))
 ```
+
+Type mappings
+-------------
+
+| Cassandra type | CL type |
+|:--------------------- |:------- |
+| ascii | string |
+| bigint | integer |
+| blob | byte-vector |
+| boolean | boolean |
+| counter | not implemented |
+| decimal | float |
+| double | float |
+| float | float |
+| inet | cqlcl:ip |
+| int | integer |
+| timestamp | not implemented |
+| timeuuid | uuid:uuid |
+| uuid | uuid:uuid |
+| varchar/text | string |
+| varint | not implemented |
+| list | not implemented |
+| set | not implemented |
+| map | not implemented |
+| custom | not implemented |
