@@ -1,13 +1,16 @@
 (defpackage :cqlcl
   (:use #:cl #:uuid #:split-sequence)
   (:export
+   ;; API
+   #:make-connection
+   #:query
+
    ;; Exported for tests
    #:ip=
    #:+consistency-digit-to-name+
    #:+consistency-name-to-digit+
    #:conn-options
    #:encode-value
-   #:make-connection
    #:make-ipv4
    #:make-ipv6
    #:make-stream-from-byte-vector
@@ -17,10 +20,10 @@
    #:parse-int
    #:parse-ip
    #:parse-short
-   #:write-short
-   #:write-int
    #:parse-short-bytes
-   #:parse-string-map
    #:parse-string
+   #:parse-string-map
    #:parse-uuid
-   #:read-single-packet))
+   #:read-single-packet
+   #:write-int
+   #:write-short))
