@@ -8,7 +8,10 @@
   (declaim (optimize sb-cover:store-coverage-data))
   (asdf:oos 'asdf:load-op :cqlcl :force t))
 
+;; The tests generate table names, so we set the random state.
+(setf *random-state* (make-random-state t))
 (ql:quickload :cqlcl)
+(ql:quickload :fiveam)
 (asdf:test-system :cqlcl)
 
 #+sbcl

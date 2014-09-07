@@ -1,6 +1,8 @@
 (defpackage :cqlcl
   (:use #:cl #:uuid #:split-sequence)
   (:export
+   ;; Exported for tests
+   #:ip=
    #:+consistency-digit-to-name+
    #:+consistency-name-to-digit+
    #:conn-options

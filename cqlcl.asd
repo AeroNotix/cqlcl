@@ -26,9 +26,5 @@
   :components ((:module "test"
                         :components
                         ((:file "tests"))))
-  :depends-on (:cqlcl :lisp-unit :alexandria :flexi-streams :uuid)
-  :perform (test-op (o s)
-                    ;; LISP-UNIT:RUN-ALL-TESTS is a macro, so it can't be called
-                    ;; like a function.
-                    (eval `(,(intern "RUN-ALL-TESTS" :lisp-unit)
-                            :cqlcl-test))))
+  :depends-on (:cqlcl :fiveam :alexandria :flexi-streams :uuid)
+  :perform (test-op (o s) (fiveam:run! :cqlcl)))
