@@ -1,10 +1,6 @@
 (in-package :cqlcl)
 
 
-(define-condition error-response (error)
-  ((code :initarg code :reader :text)
-   (msg  :initarg msg  :reader :msg)))
-
 (defclass header ()
   ((ptype       :accessor ptype       :initarg :ptype       :initform +request+)
    (version     :accessor vsn         :initarg :vsn         :initform +default-version+)
@@ -37,6 +33,10 @@
    (query-id     :accessor qid :initarg :qid)
    (col-specs    :accessor cs  :initarg :cs)))
 
+(defclass error-response ()
+  ((code :initarg :code :reader :text :accessor code)
+   (msg  :initarg :msg  :reader :msg :accessor msg)))
+
 (defmethod print-object ((pq prepared-query) stream)
   (format stream "#<PREPARED-QUERY> {~A}" (uuid:byte-array-to-uuid (qid pq))))
 
@@ -54,8 +54,7 @@
 (defun parse-error-packet (stream)
   (let* ((error-code (read-int stream))
          (error-msg (parse-string stream)))
-    (print error-msg)
-    (error 'error-response :code error-code :msg error-msg)))
+    (make-instance 'error-response :code error-code :msg error-msg)))
 
 (defun row-flag-set? (flags flag)
   (gethash flag
