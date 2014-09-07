@@ -15,3 +15,17 @@
 (defun make-stream-from-byte-vector (bv)
   (flexi-streams:make-flexi-stream
    (flexi-streams:make-in-memory-input-stream bv)))
+
+(defun empty? (thing)
+  (zerop (length thing)))
+
+
+(defmacro while (condition &rest body)
+  `(loop while ,condition
+      do
+        ,@body))
+
+(defun drain-stream (stream)
+  (while (listen stream)
+    (print (read-byte stream)))
+  (values))
