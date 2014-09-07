@@ -116,9 +116,8 @@
                       value))))))
 
 (defmethod encode-value ((value uuid) stream)
-  (if *write-wide-lengths*
-      (write-int 16 stream)
-      (write-short 16 stream))
+  (when *write-wide-lengths*
+    (write-int 16 stream))
   (write-sequence (uuid-to-byte-array value) stream))
 
 (defmethod encode-value ((value ipv4) stream)
@@ -142,9 +141,7 @@
   (flexi-streams:string-to-octets s))
 
 (defun parse-bytes* (stream size &optional (post-process #'identity))
-  (let* ((size (max (if (functionp size)
-                        (funcall size stream)
-                        size) 0))
+  (let* ((size (max size 0))
          (buf  (make-array size :element-type '(unsigned-byte 8))))
     (assert (= (read-sequence buf stream :end size) size))
     (funcall post-process buf)))
