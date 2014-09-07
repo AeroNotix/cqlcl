@@ -39,7 +39,7 @@
      (#x02 . :rows)
      (#x03 . :set-keyspace)
      (#x04 . :prepared)
-     (#x05 . :shema-change))
+     (#x05 . :schema-change))
    :test #'equal))
 (defvar +op-code-name-to-digit+
   (alexandria:alist-hash-table
