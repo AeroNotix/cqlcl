@@ -77,6 +77,9 @@
        (elt ip-bv 2)
        1)))
 
+(defun ip= (ip1 ip2)
+  (equalp (addr ip1) (addr ip2)))
+
 (defmethod ip-to-integer ((ip ipv6))
   ;; TODO: properly implement this
   -1)
