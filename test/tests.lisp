@@ -201,3 +201,12 @@
     (is (= (length (query cxn (format nil "SELECT * FROM ~a.test" table-name))) 3))
     (query cxn drop-table)
     (query cxn drop-keyspace)))
+
+(test set-keyspace
+  (let* ((cxn (make-connection))
+         (table-name (random-string))
+         (create-keyspace (create-keyspace table-name))
+         (drop-keyspace (drop-keyspace table-name)))
+    (query cxn create-keyspace)
+    (is (query cxn (format nil "SET KEYSPACE ~A" table-name)))
+    (query cxn drop-keyspace)))
