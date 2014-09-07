@@ -1,3 +1,4 @@
+(ql:quickload :fiveam)
 (defsystem :cqlcl
   :author "Aaron France"
   :version "0.0.1"
