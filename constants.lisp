@@ -70,3 +70,21 @@
      (:each-quorum  . #x07))))
 (defvar +consistency-digit-to-name+
   (rev-hash +consistency-name-to-digit+))
+(defvar +error-codes+
+  (alexandria:alist-hash-table
+   '((0x0000 . :server-error)
+     (0x000A . :protocol-error)
+     (0x0100 . :bad-credentials)
+     (0x1000 . :unavailable-exception)
+     (0x1001 . :overloaded)
+     (0x1002 . :is-bootstrapping)
+     (0x1003 . :truncate-error)
+     (0x1100 . :write-timeout)
+     (0x1200 . :read-timeout)
+     (0x2000 . :syntax-error)
+     (0x2100 . :unauthorized)
+     (0x2200 . :invalid)
+     (0x2300 . :config-error)
+     (0x2400 . :already-exists)
+     (0x2500 . :unprepared))
+   :test #'equal))

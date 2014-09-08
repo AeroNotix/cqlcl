@@ -34,8 +34,9 @@
    (col-specs    :accessor cs  :initarg :cs)))
 
 (defclass error-response ()
-  ((code :initarg :code :reader :text :accessor code)
-   (msg  :initarg :msg  :reader :msg :accessor msg)))
+  ((code  :initarg :code  :accessor code)
+   (msg   :initarg :msg   :accessor msg)
+   (extra :initarg :extra :accessor extra :initform nil)))
 
 (defun parse-schema-change (stream)
   (values t (format nil "~A: ~{~A~^.~}"
@@ -49,9 +50,35 @@
   (parse-string-multimap stream))
 
 (defun parse-error-packet (stream)
-  (let* ((error-code (read-int stream))
-         (error-msg (parse-string stream)))
-    (make-instance 'error-response :code error-code :msg error-msg)))
+  (let* ((error-code (gethash (read-int stream) +error-codes+))
+         (error-msg (parse-string stream))
+         (error-val (make-instance 'error-response :code error-code :msg error-msg)))
+    (setf (extra error-val)
+          (case error-code
+            (:unavailable-exception
+             (read-short stream)
+             (let ((required (read-int stream))
+                   (alive (read-int stream)))
+               (format nil "~d / ~d" required alive)))
+            (:write-timeout
+             (read-short stream)
+             (let ((received (read-int stream))
+                   (blockfor (read-int stream))
+                   (write-type (parse-string stream)))
+               (format nil "~a: ~d / ~d" write-type received blockfor)))
+            (:read-timeout
+             (read-short stream)
+             (let ((received (read-int stream))
+                   (blockfor (read-int stream))
+                   (data-present (= (read-byte stream) 1)))
+               (format nil "~d / ~d / ~b" received blockfor data-present)))
+            (:already-exists
+             (let ((keyspace (parse-string stream))
+                   (table-name (parse-string stream)))
+               (format nil "ALREADY EXISTS: ~a.~a" keyspace table-name)))
+            (:unprepared
+             (parse-short-bytes stream))))))
+
 
 (defun row-flag-set? (flags flag)
   (gethash flag
