@@ -207,6 +207,6 @@
          (table-name (random-string))
          (create-keyspace (create-keyspace table-name))
          (drop-keyspace (drop-keyspace table-name)))
-    (query cxn create-keyspace)
-    (is (query cxn (format nil "SET KEYSPACE ~A" table-name)))
+    (is (query cxn create-keyspace))
+    (is (query cxn (format nil "USE ~A" table-name)))
     (query cxn drop-keyspace)))
