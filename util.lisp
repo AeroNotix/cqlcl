@@ -29,3 +29,7 @@
   (while (listen stream)
     (print (read-byte stream)))
   (values))
+(defun juxt (&rest funs)
+  (lambda (v)
+    (mapcar (lambda (f)
+              (funcall f v)) funs)))

@@ -1,7 +1,10 @@
 (in-package :cqlcl)
 
 
-(defparameter *write-wide-lengths* nil)
+(defparameter *write-wide-lengths*  nil)
+(defparameter *write-short-lengths* nil)
+(defparameter *unread-size*         nil)
+
 
 (defun not-implemented (stream)
   (declare (ignore stream))
@@ -191,20 +194,35 @@
        collect
          (parse-string stream))))
 
+(defun make-parse-coll (value-fn)
+  (lambda (stream &rest size)
+    (declare (ignore size))
+    (let ((num-entries (read-short stream))
+          (coll nil))
+      (print num-entries)
+      (dotimes (i num-entries)
+        (push (funcall value-fn stream) coll))
+      (reverse coll))))
+
 (defun parse-map (stream value-fn)
   (let ((map (make-hash-table :test #'equalp))
-        (num-entries (read-short stream)))
+        (num-entries (read-short stream))
+        (*unread-size* t))
     (dotimes (i num-entries)
-      (let* ((key (parse-string stream))
-             (entry (funcall value-fn stream)))
+      (destructuring-bind (key entry) (funcall value-fn stream)
         (setf (gethash key map) entry)))
     map))
 
+(defun make-parse-map (value-fn)
+  (lambda (stream &rest size)
+    (declare (ignore size))
+    (parse-map stream value-fn)))
+
 (defun parse-string-multimap (stream)
-  (parse-map stream #'parse-string-list))
+  (parse-map stream (juxt #'parse-string #'parse-string-list)))
 
 (defun parse-string-map (stream)
-  (parse-map stream #'parse-string))
+  (parse-map stream (juxt #'parse-string #'parse-string)))
 
 (defun parse-option-list (stream)
   (loop for x upto (read-short stream)
@@ -224,10 +242,10 @@
            (:float     . ,#'not-implemented)
            (:int       . ,#'parse-int)
            (:text      . ,#'parse-string)
-           (:timestamp . ,#'parse-bigint)
+           (:timestamp . ,#'parse-timestamp)
            (:uuid      . ,#'parse-uuid)
            (:varchar   . ,#'parse-string)
-           (:varint    . ,#'not-implemented)
+           (:varint    . ,#'parse-varint)
            (:timeuuid  . ,#'parse-uuid)
            (:inet      . ,#'parse-ip))))
     (alexandria:alist-hash-table funs)))
@@ -238,11 +256,11 @@
       (:custom
        `(:custom ,(parse-string stream)))
       (:list
-       `(:list ,(parse-option stream)))
+       (make-parse-coll (parse-option stream)))
       (:map
-       `(:map ,(parse-option stream)
-              ,(parse-option stream)))
+       (make-parse-map (juxt (parse-option stream)
+                             (parse-option stream))))
       (:set
-       `(:set ,(parse-option stream)))
+       (make-parse-coll (parse-option stream)))
       (otherwise
        (gethash id +option-id-to-parser+)))))
