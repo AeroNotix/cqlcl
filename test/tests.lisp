@@ -166,8 +166,8 @@
          (table-name (random-string))
          (create-keyspace (create-keyspace table-name))
          (drop-keyspace (drop-keyspace table-name)))
-    (is (equal (query cxn create-keyspace) t))
-    (is (equal (query cxn drop-keyspace) t))))
+    (is (query cxn create-keyspace))
+    (is (query cxn drop-keyspace))))
 
 (test create/drop-tables
   (let* ((cxn (make-connection))
@@ -176,10 +176,10 @@
          (drop-keyspace (drop-keyspace table-name))
          (create-table (create-table table-name))
          (drop-table (drop-table table-name)))
-    (is (equal (query cxn create-keyspace) t))
-    (is (equal (query cxn create-table) t))
-    (is (equal (query cxn drop-table) t))
-    (is (equal (query cxn drop-keyspace) t))))
+    (is (query cxn create-keyspace))
+    (is (query cxn create-table))
+    (is (query cxn drop-table))
+    (is (query cxn drop-keyspace))))
 
 (test querying-data
   (let* ((cxn (make-connection))
