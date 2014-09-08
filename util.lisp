@@ -26,9 +26,11 @@
         ,@body))
 
 (defun drain-stream (stream)
-  (while (listen stream)
-    (print (read-byte stream)))
-  (values))
+  (let ((out nil))
+    (while (listen stream)
+      (push (read-byte stream) out))
+    (reverse out)))
+
 (defun juxt (&rest funs)
   (lambda (v)
     (mapcar (lambda (f)
