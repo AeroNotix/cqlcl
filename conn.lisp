@@ -2,7 +2,6 @@
 
 
 (defclass synchronous-connection ()
-  ;; TODO maybe this should hold an instance of a parser
   ((conn             :accessor conn         :initarg :conn)
    (prepared-queries :accessor pqs          :initform (make-hash-table :test #'equal))
    (conn-options     :accessor conn-options :initarg :options)))
