@@ -66,7 +66,11 @@
 
 (defmethod execute ((conn synchronous-connection) (statement string) &rest values)
   (let* ((cxn (conn conn))
-         (qid (gethash statement (pqs conn)))
-         (header (make-instance 'execute-header :op :execute :qid (qid qid) :vals values)))
-    (encode-value header cxn)
-    (read-single-packet cxn)))
+         (qid (gethash statement (pqs conn))))
+    (if qid
+      (progn
+        (encode-value
+         (make-instance 'execute-header :op :execute :qid (qid qid) :vals values)
+         cxn)
+        (read-single-packet cxn))
+      (error (format nil "Unprepared query: ~A" statement)))))
