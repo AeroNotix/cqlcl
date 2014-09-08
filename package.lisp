@@ -8,6 +8,8 @@
    #:execute
    #:options
 
+   #:msg
+
    ;; Exported for tests
    #:ip=
    #:+consistency-digit-to-name+
@@ -16,6 +18,7 @@
    #:encode-value
    #:make-ipv4
    #:make-ipv6
+   #:make-bigint
    #:make-stream-from-byte-vector
    #:parse-boolean
    #:parse-bytes
