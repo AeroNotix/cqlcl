@@ -49,6 +49,31 @@
 (defun parse-supported-packet (stream)
   (parse-string-multimap stream))
 
+(defun parse-unavailable-exception (stream)
+  (read-short stream)
+  (let ((required (read-int stream))
+        (alive (read-int stream)))
+    (format nil "~d / ~d" required alive)))
+
+(defun parse-write-timeout (stream)
+  (read-short stream)
+  (let ((received (read-int stream))
+        (blockfor (read-int stream))
+        (write-type (parse-string stream)))
+    (format nil "~a: ~d / ~d" write-type received blockfor)))
+
+(defun parse-read-timeout (stream)
+  (read-short stream)
+  (let ((received (read-int stream))
+        (blockfor (read-int stream))
+        (data-present (= (read-byte stream) 1)))
+    (format nil "~d / ~d / ~b" received blockfor data-present)))
+
+(defun parse-already-exists (stream)
+  (let ((keyspace (parse-string stream))
+        (table-name (parse-string stream)))
+    (format nil "ALREADY EXISTS: ~a.~a" keyspace table-name)))
+
 (defun parse-error-packet (stream)
   (let* ((error-code (gethash (read-int stream) +error-codes+))
          (error-msg (parse-string stream))
@@ -56,29 +81,16 @@
     (setf (extra error-val)
           (case error-code
             (:unavailable-exception
-             (read-short stream)
-             (let ((required (read-int stream))
-                   (alive (read-int stream)))
-               (format nil "~d / ~d" required alive)))
+             (parse-unavailable-exception stream))
             (:write-timeout
-             (read-short stream)
-             (let ((received (read-int stream))
-                   (blockfor (read-int stream))
-                   (write-type (parse-string stream)))
-               (format nil "~a: ~d / ~d" write-type received blockfor)))
+             (parse-write-timeout stream))
             (:read-timeout
-             (read-short stream)
-             (let ((received (read-int stream))
-                   (blockfor (read-int stream))
-                   (data-present (= (read-byte stream) 1)))
-               (format nil "~d / ~d / ~b" received blockfor data-present)))
+             (parse-read-timeout stream))
             (:already-exists
-             (let ((keyspace (parse-string stream))
-                   (table-name (parse-string stream)))
-               (format nil "ALREADY EXISTS: ~a.~a" keyspace table-name)))
+             (parse-already-exists stream))
             (:unprepared
-             (parse-short-bytes stream))))))
-
+             (parse-short-bytes stream))))
+    error-val))
 
 (defun row-flag-set? (flags flag)
   (gethash flag
