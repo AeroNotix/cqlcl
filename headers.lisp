@@ -135,11 +135,15 @@
       (let ((col-specs (parse-colspecs global-tables-spec col-count stream)))
         (make-instance 'prepared-query :qid qid :cs col-specs)))))
 
+(defun parse-set-keyspace (stream)
+  (values t (parse-string stream)))
+
 (defun parse-result-packet (stream)
   (let* ((res-int (read-int stream))
          (res-type (gethash res-int +result-type+)))
     (case res-type
-      (:set-keyspace t)
+      (:set-keyspace
+       (parse-set-keyspace stream))
       (:rows
        (parse-rows stream))
       (:prepared
