@@ -82,15 +82,30 @@
         (write-short len stream))
     len))
 
+(defmethod encode-value ((values list) stream)
+  (write-short (length values) stream)
+  (let ((*write-wide-lengths* nil)
+        (*write-short-lengths* t))
+    (mapcar (lambda (value)
+              (encode-value value stream)) values)))
+
 (defmethod encode-value ((value integer) stream)
-  (write-int 4 stream)
+  (if *write-short-lengths*
+      (write-short 4 stream)
+      (write-int 4 stream))
   (write-int value stream))
+
+(defmethod encode-value ((value bigint) stream)
+  (write-int 8 stream)
+  (write-bigint (val value) stream))
 
 (defmethod encode-value ((value string) stream)
   (encode-value (as-bytes value) stream))
 
 (defmethod encode-value ((value hash-table) stream)
-  (let ((num-entries (hash-table-count value)))
+  (let ((num-entries (hash-table-count value))
+        (*write-wide-lengths* nil)
+        (*write-short-lengths* t))
     (write-short num-entries stream)
     (maphash (lambda (k v)
                (encode-value k stream)
@@ -151,10 +166,14 @@
 
 (defun parse-boolean (stream &optional size)
   (declare (ignore size))
+  (when *unread-size*
+    (read-short stream))
   (let ((b (read-byte stream)))
     (not (zerop b))))
 
 (defun parse-uuid (stream &optional (size 16))
+  (when *unread-size*
+    (read-short stream))
   (let ((bytes (parse-bytes* stream size)))
     (uuid:byte-array-to-uuid bytes)))
 
@@ -167,6 +186,12 @@
 (defun parse-int (stream &optional size)
   (declare (ignore size))
   (read-int stream :signed? t))
+
+(defun parse-varint (stream &optional size)
+  (read-sized (* (or size (parse-short stream)) 8) stream t))
+
+(defun parse-timestamp (stream &optional size)
+  (read-bigint stream))
 
 (defun parse-bigint (stream &optional size)
   (declare (ignore size))

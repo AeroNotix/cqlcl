@@ -35,8 +35,15 @@
 (define-binary-write octet  8)
 (define-binary-write short  16)
 (define-binary-write int    32)
-(define-binary-write bigint 512)
+(define-binary-write bigint 64)
 (define-binary-write ipv6   128)
+
+
+(defclass bigint ()
+  ((value :accessor val :initarg :val :initform 0)))
+
+(defun make-bigint (n)
+  (make-instance 'bigint :val n))
 
 (defclass ip () ())
 
