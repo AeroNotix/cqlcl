@@ -122,8 +122,8 @@
           (is (equalp parsed el))))))
 
 (test encode-decode-ip
-    (let ((ip4 (make-ipv4))
-          (ip6 (make-ipv6)))
+    (let ((ip4 (make-ipv4 "192.168.0.1"))
+          (ip6 (make-ipv6 "2001:db8:0000:1:1:1:1:1")))
       (dolist (el (list ip4 ip6))
         (let* ((os (flexi-streams:make-in-memory-output-stream))
                (ims (flexi-streams:make-flexi-stream os)))
