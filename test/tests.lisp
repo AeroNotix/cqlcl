@@ -7,7 +7,8 @@
 
 (defun hash-equal (h1 h2)
   (maphash (lambda (k v)
-             (is (equalp (gethash k h2) (values v t)))) h1))
+             (is (equalp (gethash k h2) (values v t)))) h1)
+  t)
 
 (test parse-options-header
   (let* ((packet (make-stream-from-byte-vector
@@ -264,7 +265,7 @@
          (ht (alexandria:alist-hash-table
               '((1 . "SOMETHING")
                 (2 . "whatever")
-                (3 . "turds")))))
+                (3 . "turds")) :test #'equalp)))
     (is (equal (query cxn create-keyspace) t))
     (is (equal (query cxn create-table) t))
     (is (equal (prepare cxn insert) nil))
@@ -284,5 +285,5 @@
                  #'= #'uuid:uuid= #'uuid:uuid= #'string= #'=)))
       (loop for (a b f) in (mapcar #'list res expected comparitors)
          do
-           (funcall f a b)))
+           (is (funcall f a b))))
     (is (equal (query cxn drop-keyspace) t))))
