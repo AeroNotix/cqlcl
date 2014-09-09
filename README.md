@@ -77,12 +77,12 @@ Type mappings
 | float | float |
 | inet | cqlcl:ip |
 | int | integer |
-| timestamp | not implemented |
+| timestamp | integer |
 | timeuuid | uuid:uuid |
 | uuid | uuid:uuid |
 | varchar/text | string |
 | varint | not implemented |
-| list | not implemented |
-| set | not implemented |
-| map | not implemented |
+| list | list |
+| set | list |
+| map | hashtbale |
 | custom | not implemented |
