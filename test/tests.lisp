@@ -152,6 +152,43 @@
                       )"
           table-name))
 
+(defun create-full-table (table-name)
+  (format nil "CREATE TABLE ~A.fulltest (
+                id int PRIMARY KEY,
+                ascii ascii,
+                bigint bigint,
+                blob blob,
+                boolean boolean,
+                inet inet,
+                timestamp timestamp,
+                timeuuid timeuuid,
+                uuid uuid,
+                varchar varchar,
+                varint varint,
+                list list<int>,
+                aset set<int>,
+                map map<int, ascii>)"
+          table-name))
+
+(defun insert-full-table (table-name)
+   (format nil "INSERT INTO ~A.fulltest (
+                id,
+                ascii,
+                bigint,
+                blob,
+                boolean,
+                inet,
+                timestamp,
+                timeuuid,
+                uuid,
+                varchar,
+                varint,
+                list,
+                aset,
+                map) VALUES
+                (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                table-name))
+
 (defun drop-table (table-name)
   (format nil "DROP TABLE ~A.test" table-name))
 
@@ -210,3 +247,42 @@
     (is (query cxn create-keyspace))
     (is (query cxn (format nil "USE ~A" table-name)))
     (query cxn drop-keyspace)))
+
+(test all-types-table
+  (let* ((cxn (make-connection))
+         (table-name (random-string))
+         (create-keyspace (create-keyspace table-name))
+         (drop-keyspace (drop-keyspace table-name))
+         (create-table (create-full-table table-name))
+         (insert (insert-full-table table-name))
+         (uuid1 (uuid:make-uuid-from-string "85445cf8-93e0-11e3-bca1-425861b86ab6"))
+         (uuid2 (uuid:make-uuid-from-string "92cf200b-672a-4c37-884d-b17206dcb096"))
+         (blob-data (make-array
+                     14
+                     :element-type '(unsigned-byte 8)
+                     :initial-contents #(48 120 65 49 66 50 67 51 68 52 69 53 70 54)))
+         (ht (alexandria:alist-hash-table
+              '((1 . "SOMETHING")
+                (2 . "whatever")
+                (3 . "turds")))))
+    (is (equal (query cxn create-keyspace) t))
+    (is (equal (query cxn create-table) t))
+    (is (equal (prepare cxn insert) nil))
+    (is (not (execute cxn insert
+                      1 "ascii" (make-bigint 123456) blob-data t (make-ipv4 "192.168.12.1") (make-bigint 1392207804464)
+                      uuid1 uuid2
+                      "varchar" (make-varint 123456) (list 1 2 3 4 5 6) (list 1 2 3 4 5 6)
+                      ht)))
+    (let* ((res (first (query cxn (format nil "SELECT * FROM ~A.fulltest" table-name))))
+           (expected
+            (list
+             1 "ascii" (list 1 2 3 4 5 6) 123456 "0xA1B2C3D4E5F6" T (make-ipv4 "192.168.12.1")
+             (list 1 2 3 4 5 6) ht 1392207804464
+             uuid1 uuid2 "varchar" 123456))
+          (comparitors
+           (list #'= #'string= #'equal #'= #'string= #'eq #'ip= #'equal #'hash-equal
+                 #'= #'uuid:uuid= #'uuid:uuid= #'string= #'=)))
+      (loop for (a b f) in (mapcar #'list res expected comparitors)
+         do
+           (funcall f a b)))
+    (is (equal (query cxn drop-keyspace) t))))
