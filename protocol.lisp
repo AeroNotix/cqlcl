@@ -4,6 +4,7 @@
 (defparameter *write-wide-lengths*  nil)
 (defparameter *write-short-lengths* nil)
 (defparameter *unread-size*         nil)
+(defparameter *executing*           nil)
 
 
 (defun not-implemented (stream)
@@ -69,6 +70,7 @@
 
 (defmethod encode-value ((header execute-header) stream)
   (let ((c (gethash (consistency header) +consistency-name-to-digit+))
+        (*executing* t)
         (qid (qid header)))
     (encode-value qid stream)
     (write-short (length (vals header)) stream)
@@ -83,17 +85,29 @@
     len))
 
 (defmethod encode-value ((values list) stream)
-  (write-short (length values) stream)
-  (let ((*write-wide-lengths* nil)
-        (*write-short-lengths* t))
+  (let* ((*write-wide-lengths* nil)
+         (*write-short-lengths* t)
+         (os (flexi-streams:make-in-memory-output-stream))
+         (ims (flexi-streams:make-flexi-stream os)))
+    (write-short (length values) ims)
     (mapcar (lambda (value)
-              (encode-value value stream)) values)))
+              (encode-value value ims)) values)
+    (force-output ims)
+    (let ((bv (flexi-streams:get-output-stream-sequence os)))
+      (write-int (length bv) stream)
+      (write-sequence bv stream))))
 
 (defmethod encode-value ((value integer) stream)
   (if *write-short-lengths*
       (write-short 4 stream)
       (write-int 4 stream))
   (write-int value stream))
+
+(defmethod encode-value ((value varint) stream)
+  (let* ((v (val value))
+         (byte-size (min-bytes v)))
+    (write-int byte-size stream)
+    (write-sized v (* byte-size 8) stream)))
 
 (defmethod encode-value ((value bigint) stream)
   (write-int 8 stream)
@@ -103,13 +117,19 @@
   (encode-value (as-bytes value) stream))
 
 (defmethod encode-value ((value hash-table) stream)
-  (let ((num-entries (hash-table-count value))
-        (*write-wide-lengths* nil)
-        (*write-short-lengths* t))
-    (write-short num-entries stream)
+  (let* ((num-entries (hash-table-count value))
+         (*write-wide-lengths* nil)
+         (*write-short-lengths* t)
+         (os (flexi-streams:make-in-memory-output-stream))
+         (ims (flexi-streams:make-flexi-stream os)))
+    (write-short num-entries ims)
     (maphash (lambda (k v)
-               (encode-value k stream)
-               (encode-value v stream)) value)))
+               (encode-value k ims)
+               (encode-value v ims)) value)
+    (let ((bv (flexi-streams:get-output-stream-sequence os)))
+      (when *executing*
+        (write-int (length bv) stream))
+      (write-sequence bv stream))))
 
 (defmethod encode-value ((value null) stream)
   (when *write-wide-lengths*
@@ -224,7 +244,6 @@
     (declare (ignore size))
     (let ((num-entries (read-short stream))
           (coll nil))
-      (print num-entries)
       (dotimes (i num-entries)
         (push (funcall value-fn stream) coll))
       (reverse coll))))

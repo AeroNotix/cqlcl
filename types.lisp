@@ -39,8 +39,20 @@
 (define-binary-write ipv6   128)
 
 
-(defclass bigint ()
+(defun min-bytes (n)
+  (ceiling (integer-length n) 8))
+
+(defclass anumber ()
   ((value :accessor val :initarg :val :initform 0)))
+
+(defclass varint (anumber)
+  nil)
+
+(defclass bigint (anumber)
+  nil)
+
+(defun make-varint (n)
+  (make-instance 'varint :val n))
 
 (defun make-bigint (n)
   (make-instance 'bigint :val n))
@@ -50,14 +62,14 @@
 (defclass ipv4 (ip)
   ((addr :accessor addr :initarg :addr :initform "0.0.0.0")))
 
-(defun make-ipv4 ()
-  (make-instance 'ipv4))
+(defun make-ipv4 (addr)
+  (make-instance 'ipv4 :addr addr))
 
 (defclass ipv6 (ip)
   ((addr :accessor addr :initarg :addr :initform "0:0:0:0:0:0:0:0")))
 
-(defun make-ipv6 ()
-  (make-instance 'ipv6))
+(defun make-ipv6 (addr)
+  (make-instance 'ipv6 :addr addr))
 
 (defgeneric ip-to-byte-array (ip)
   (:documentation "Returns a byte array representing an IP Address."))
@@ -94,12 +106,12 @@
 (defun byte-array-to-ipv4 (bytes)
   ;; TODO: properly implement this
   (declare (ignore bytes))
-  (make-ipv4))
+  (make-ipv4 "0.0.0.0"))
 
 (defun byte-array-to-ipv6 (bytes)
   ;; TODO: properly implement this
   (declare (ignore bytes))
-  (make-ipv6))
+  (make-ipv6 "0:0:0:0:0:0:0:0"))
 
 (defun byte-array-to-ip (bytes)
   (ccase (length bytes)
@@ -111,3 +123,6 @@
 (defun make-in-memory-output-stream ()
   (flexi-streams:make-flexi-stream
    (flexi-streams:make-in-memory-output-stream)))
+
+(defun bytes-to-integer (bv)
+  (read-sized (* 8 (length bv)) (flexi-streams:make-in-memory-input-stream bv)))

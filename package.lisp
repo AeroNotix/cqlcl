@@ -19,6 +19,7 @@
    #:make-ipv4
    #:make-ipv6
    #:make-bigint
+   #:make-varint
    #:make-stream-from-byte-vector
    #:parse-boolean
    #:parse-bytes
