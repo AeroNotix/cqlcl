@@ -205,10 +205,12 @@
 
 (defun parse-int (stream &optional size)
   (declare (ignore size))
+  (when *unread-size*
+    (parse-short stream))
   (read-int stream :signed? t))
 
-(defun parse-varint (stream &optional size)
-  (read-sized (* (or size (parse-short stream)) 8) stream t))
+(defun parse-varint (stream &optional (size (parse-short stream)))
+  (read-sized (* size 8) stream t))
 
 (defun parse-timestamp (stream &optional size)
   (read-bigint stream))
@@ -245,6 +247,7 @@
     (let ((num-entries (read-short stream))
           (coll nil))
       (dotimes (i num-entries)
+        (read-short stream)
         (push (funcall value-fn stream) coll))
       (reverse coll))))
 
