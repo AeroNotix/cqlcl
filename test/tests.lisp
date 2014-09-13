@@ -6,9 +6,8 @@
 (in-suite :cqlcl)
 
 (defun hash-equal (h1 h2)
-  (maphash (lambda (k v)
-             (is (equalp (gethash k h2) (values v t)))) h1)
-  t)
+  (every (complement #'null) (maphash (lambda (k v)
+                                        (is (equalp (gethash k h2) (values v t)))) h1)))
 
 (test parse-options-header
   (let* ((packet (make-stream-from-byte-vector
