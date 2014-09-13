@@ -17,6 +17,7 @@
                :uuid
                :split-sequence
                :usocket)
+  :defsystem-depends-on (:fiveam)
   :in-order-to ((test-op (test-op :cqlcl-test))))
 
 (defsystem cqlcl-test
@@ -26,7 +27,5 @@
   :components ((:module "test"
                         :components
                         ((:file "tests"))))
-  ;; :defsystem-depends-on (:fiveam)
   :depends-on (:cqlcl :fiveam :alexandria :flexi-streams :uuid)
-  ;; :perform (test-op (o s) (fiveam:run! :cqlcl))
-  )
+  :perform (test-op (o s) (fiveam:run! :cqlcl)))
