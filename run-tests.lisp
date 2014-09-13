@@ -16,10 +16,11 @@
     (asdf:oos 'asdf:load-op :cqlcl :force t)))
 
 (with-silence
-;; The tests generate table names, so we set the random state.
-  (setf *random-state* (make-random-state t))
-  (ql:quickload :cqlcl)
-  (ql:quickload :fiveam))
+    (progn
+      ;; The tests generate table names, so we set the random state.
+      (setf *random-state* (make-random-state t))
+      (ql:quickload :cqlcl)
+      (ql:quickload :fiveam)))
 
 (asdf:test-system :cqlcl)
 
