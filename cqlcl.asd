@@ -1,4 +1,3 @@
-(ql:quickload :fiveam)
 (defsystem :cqlcl
   :author "Aaron France"
   :version "0.0.1"
@@ -27,5 +26,7 @@
   :components ((:module "test"
                         :components
                         ((:file "tests"))))
+  ;; :defsystem-depends-on (:fiveam)
   :depends-on (:cqlcl :fiveam :alexandria :flexi-streams :uuid)
-  :perform (test-op (o s) (fiveam:run! :cqlcl)))
+  ;; :perform (test-op (o s) (fiveam:run! :cqlcl))
+  )
