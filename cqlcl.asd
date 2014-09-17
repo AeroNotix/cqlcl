@@ -17,10 +17,9 @@
                :uuid
                :split-sequence
                :usocket)
-  :defsystem-depends-on (:fiveam)
   :in-order-to ((test-op (test-op :cqlcl-test))))
 
-(defsystem cqlcl-test
+(defsystem :cqlcl-test
   :version "0.0.1"
   :description "CQLv2 binary protocol tests"
   :licence "BSD"
@@ -28,4 +27,5 @@
                         :components
                         ((:file "tests"))))
   :depends-on (:cqlcl :fiveam :alexandria :flexi-streams :uuid)
-  :perform (test-op (o s) (fiveam:run! :cqlcl)))
+  :perform (test-op :after (o s)
+                    (fiveam:run! :cqlcl)))
