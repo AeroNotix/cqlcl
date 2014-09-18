@@ -78,3 +78,33 @@
            cxn)
           (read-single-packet cxn))
         (error (format nil "Unprepared query: ~A" statement)))))
+
+(defun next-stream-id* (used-streams)
+  (when (= (length used-streams) 254)
+    (error "Error because no streamz left.")) ;; TODO MAKE THIS A PROPER CONDITION
+  (if (empty? used-streams)
+      1
+      (let ((stream-id (loop for i from 1 upto 255
+                          do
+                            (when (not (equal (nth (1- i) used-streams) i))
+                              (return i)))))
+        stream-id)))
+
+(defgeneric next-stream-id (connection)
+  (:documentation "Returns the next available stream id for a connection."))
+
+(defgeneric return-stream-id (connection id)
+  (:documentation "Returns a stream id to the pool of ids."))
+
+(defmethod next-stream-id ((conn async-connection))
+  (with-lock-held ((mutex conn))
+    (let ((stream-id (next-stream-id* (used-streams conn))))
+      (setf (used-streams conn) (sort (cons stream-id (used-streams conn)) #'<))
+      stream-id)))
+
+(defmethod return-stream-id ((conn async-connection) (i integer))
+  (with-lock-held ((mutex conn))
+    (when (not (member i (used-streams conn)))
+      (error "ID not in use")) ;; TODO: Make this better
+    (setf (used-streams conn) (remove i (used-streams conn))))
+  (values))

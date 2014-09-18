@@ -16,6 +16,7 @@
                :flexi-streams
                :uuid
                :split-sequence
+               :bordeaux-threads
                :usocket)
   :in-order-to ((test-op (test-op :cqlcl-test))))
 
