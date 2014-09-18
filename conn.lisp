@@ -1,14 +1,18 @@
 (in-package :cqlcl)
 
+(defclass connection ()
+  ((conn :accessor conn :initarg :conn)
+   (prepared-queries :accessor pqs :initform (make-hash-table :test #'equal))
+   (conn-options :accessor conn-options :initarg :options)))
 
-(defclass synchronous-connection ()
-  ((conn             :accessor conn         :initarg :conn)
-   (prepared-queries :accessor pqs          :initform (make-hash-table :test #'equal))
-   (conn-options     :accessor conn-options :initarg :options)))
+(defclass async-connection (connection)
+  ((used-streams :accessor used-streams :initform nil)
+   (pending-queries :accessor pending-queries :initform (make-hash-table :test #'equal))
+   (mutex :accessor mutex :initform (make-lock))))
 
 (defun make-connection (&key (connection-type :sync) (host "localhost") (port 9042)); TODO: &key version compression)
   (let* ((c-types '((:sync . synchronous-connection)
-                    (:async . connection)))
+                    (:async . async-connection)))
          (conn (usocket:socket-stream
                 (usocket:socket-connect host port :element-type '(unsigned-byte 8))))
          (cxn-type (cdr (assoc connection-type c-types)))
