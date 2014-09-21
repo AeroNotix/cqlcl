@@ -11,7 +11,7 @@
    (mutex :accessor mutex :initform (make-lock))))
 
 (defun make-connection (&key (connection-type :sync) (host "localhost") (port 9042)); TODO: &key version compression)
-  (let* ((c-types '((:sync . synchronous-connection)
+  (let* ((c-types '((:sync . connection)
                     (:async . async-connection)))
          (conn (usocket:socket-stream
                 (usocket:socket-connect host port :element-type '(unsigned-byte 8))))
@@ -39,7 +39,7 @@
 (defgeneric execute (connection statement &rest values)
   (:documentation "Executes a prepared statement with bound values."))
 
-(defmethod startup ((conn synchronous-connection) &key (version "3.0.0") (compression nil))
+(defmethod startup ((conn connection) &key (version "3.0.0") (compression nil))
   (declare (ignore compression)) ;; TODO: Implement compression
   (let* ((options (alexandria:alist-hash-table
                    `(("CQL_VERSION" . ,version))))
@@ -47,12 +47,12 @@
          (cxn (conn conn)))
     (encode-value header cxn)))
 
-(defmethod options ((conn synchronous-connection))
+(defmethod options ((conn connection))
   (let ((header (make-instance 'options-header :op :options))
         (cxn (conn conn)))
     (encode-value header cxn)))
 
-(defmethod prepare ((conn synchronous-connection) (statement string))
+(defmethod prepare ((conn connection) (statement string))
   (when (not (gethash statement (pqs conn)))
     (let ((cxn (conn conn))
           (header (make-instance 'prepare-header :op :prepare :ps statement)))
@@ -62,13 +62,13 @@
         (setf (gethash statement (pqs conn)) prep-results))))
   (values))
 
-(defmethod query ((conn synchronous-connection) (statement string))
+(defmethod query ((conn connection) (statement string))
   (let ((cxn (conn conn))
         (header (make-instance 'query-header :op :query :qs statement)))
     (encode-value header cxn)
     (read-single-packet cxn)))
 
-(defmethod execute ((conn synchronous-connection) (statement string) &rest values)
+(defmethod execute ((conn connection) (statement string) &rest values)
   (let* ((cxn (conn conn))
          (qid (gethash statement (pqs conn))))
     (if qid
