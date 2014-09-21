@@ -108,3 +108,11 @@
       (error "ID not in use")) ;; TODO: Make this better
     (setf (used-streams conn) (remove i (used-streams conn))))
   (values))
+
+(defmacro with-next-stream-id (var aconn &body body)
+  (let ((connsym (gensym)))
+    `(let* ((,connsym ,aconn)
+            (,var (next-stream-id ,connsym)))
+       (unwind-protect
+            ,@body
+         (return-stream-id ,connsym ,var)))))
