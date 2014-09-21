@@ -96,18 +96,18 @@
 (defgeneric return-stream-id (connection id)
   (:documentation "Returns a stream id to the pool of ids."))
 
-(defmethod next-stream-id ((conn async-connection))
-  (with-lock-held ((mutex conn))
-    (let ((stream-id (next-stream-id* (used-streams conn))))
-      (setf (used-streams conn) (sort (cons stream-id (used-streams conn)) #'<))
-      stream-id)))
+;; (defmethod next-stream-id ((conn async-connection))
+;;   (with-lock-held ((mutex conn))
+;;     (let ((stream-id (next-stream-id* (used-streams conn))))
+;;       (setf (used-streams conn) (sort (cons stream-id (used-streams conn)) #'<))
+;;       stream-id)))
 
-(defmethod return-stream-id ((conn async-connection) (i integer))
-  (with-lock-held ((mutex conn))
-    (when (not (member i (used-streams conn)))
-      (error "ID not in use")) ;; TODO: Make this better
-    (setf (used-streams conn) (remove i (used-streams conn))))
-  (values))
+;; (defmethod return-stream-id ((conn async-connection) (i integer))
+;;   (with-lock-held ((mutex conn))
+;;     (when (not (member i (used-streams conn)))
+;;       (error "ID not in use")) ;; TODO: Make this better
+;;     (setf (used-streams conn) (remove i (used-streams conn))))
+;;   (values))
 
 (defmacro with-next-stream-id (var aconn &body body)
   (let ((connsym (gensym)))
