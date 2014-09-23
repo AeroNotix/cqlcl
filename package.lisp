@@ -21,6 +21,8 @@
    #:make-bigint
    #:make-varint
    #:make-stream-from-byte-vector
+   #:next-stream-id
+   #:return-stream-id
    #:parse-boolean
    #:parse-bytes
    #:parse-consistency
@@ -32,5 +34,6 @@
    #:parse-string-map
    #:parse-uuid
    #:read-single-packet
+   #:used-streams
    #:write-int
    #:write-short))

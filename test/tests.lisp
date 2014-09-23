@@ -1,5 +1,6 @@
 (defpackage #:cqlcl-test
-  (:use :cl :cqlcl :fiveam))
+  (:export #:concurrent-stream-ids)
+  (:use :cl :cqlcl :fiveam :lparallel))
 
 (in-package #:cqlcl-test)
 (def-suite :cqlcl)
@@ -8,6 +9,8 @@
 (defun hash-equal (h1 h2)
   (every (complement #'null) (maphash (lambda (k v)
                                         (is (equalp (gethash k h2) (values v t)))) h1)))
+
+(setf lparallel:*kernel* (lparallel:make-kernel 8))
 
 (test parse-options-header
   (let* ((packet (make-stream-from-byte-vector
@@ -286,3 +289,10 @@
          do
            (is (funcall f a b))))
     (is (equal (query cxn drop-keyspace) t))))
+
+(test concurrent-stream-ids
+  (let* ((client (make-connection :connection-type :async))
+         (used-streams
+          (lparallel:pmapcar #'next-stream-id (make-list 100 :initial-element client))))
+    (is (equal (length used-streams) (length (used-streams client))))
+    (is (equal (sort used-streams #'<) (sort (used-streams client) #'<)))))
