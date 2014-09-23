@@ -296,3 +296,29 @@
           (lparallel:pmapcar #'next-stream-id (make-list 100 :initial-element client))))
     (is (equal (length used-streams) (length (used-streams client))))
     (is (equal (sort used-streams #'<) (sort (used-streams client) #'<)))))
+
+(defun make-id-flipper (client)
+  (let ((state nil)
+        (id nil))
+    (lambda ()
+      (if state
+          (return-stream-id client id)
+          (setf id (next-stream-id client)))
+      (setf state (not state)))))
+
+(defun make-flipper-calls (flippers)
+  (lparallel:pmapcar #'funcall flippers))
+
+(test concurrent-stream-ids-checkin
+  (let* ((client (make-connection :connection-type :async))
+         (size 254)
+         (flippers (loop for i from 1 to size
+                        collect
+                        (make-id-flipper client))))
+    (loop for i from 1 to 15
+         do
+         (progn
+           (is (= size (length (lparallel:pmapcar #'funcall flippers))))
+           (is (= size (length (used-streams client))))
+           (is (= size (length (lparallel:pmapcar #'funcall flippers))))
+           (is (= 0 (length (used-streams client))))))))
