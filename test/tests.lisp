@@ -6,11 +6,11 @@
 (def-suite :cqlcl)
 (in-suite :cqlcl)
 
+(setf lparallel:*kernel* (lparallel:make-kernel 8)) ;; TOTALLY ARBIRARY
+
 (defun hash-equal (h1 h2)
   (every (complement #'null) (maphash (lambda (k v)
                                         (is (equalp (gethash k h2) (values v t)))) h1)))
-
-(setf lparallel:*kernel* (lparallel:make-kernel 8))
 
 (test parse-options-header
   (let* ((packet (make-stream-from-byte-vector
