@@ -1,5 +1,5 @@
 (defpackage :cqlcl
-  (:use #:cl #:uuid #:split-sequence)
+  (:use #:cl #:uuid #:split-sequence :lparallel :bordeaux-threads)
   (:export
    ;; API
    #:make-connection
