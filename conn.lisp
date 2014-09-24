@@ -20,9 +20,23 @@
          (cxn (make-instance cxn-type :conn conn)))
     (let* ((options (options cxn)))
       (setf (conn-options cxn) options)
-      (startup cxn)
-      (assert (eq (read-single-packet conn) :ready))
+      (assert (eq (startup cxn) :ready))
       cxn)))
+
+(defgeneric read-single-packet (connection)
+  (:documentation "Reads a single CQL reply packet from a CQL connection."))
+
+(defmethod read-single-packet ((conn connection))
+  (let ((cxn (conn conn)))
+    (let* ((header-type (parse-header (parse-bytes cxn 8))))
+      (ccase header-type
+        (:supported
+         (parse-supported-packet cxn))
+        (:error
+         (parse-error-packet cxn))
+        (:ready :ready)
+        (:result
+         (parse-result-packet cxn))))))
 
 (defgeneric options (connection)
   (:documentation "Sends an option request."))
@@ -43,7 +57,7 @@
   (let ((header (make-instance 'options-header :op :options))
         (cxn (conn conn)))
     (encode-value header cxn)
-    (read-single-packet cxn)))
+    (read-single-packet conn)))
 
 (defmethod startup ((conn connection) &key (version "3.0.0") (compression nil))
   (declare (ignore compression)) ;; TODO: Implement compression
@@ -51,14 +65,15 @@
                    `(("CQL_VERSION" . ,version))))
          (header (make-instance 'startup-header :op :startup :opts options))
          (cxn (conn conn)))
-    (encode-value header cxn)))
+    (encode-value header cxn)
+    (read-single-packet conn)))
 
 (defmethod prepare ((conn connection) (statement string))
   (when (not (gethash statement (pqs conn)))
     (let ((cxn (conn conn))
           (header (make-instance 'prepare-header :op :prepare :ps statement)))
       (encode-value header cxn)
-      (let ((prep-results (read-single-packet cxn)))
+      (let ((prep-results (read-single-packet conn)))
         (setf (qs prep-results) statement)
         (setf (gethash statement (pqs conn)) prep-results))))
   (values))
@@ -67,7 +82,7 @@
   (let ((cxn (conn conn))
         (header (make-instance 'query-header :op :query :qs statement)))
     (encode-value header cxn)
-    (read-single-packet cxn)))
+    (read-single-packet conn)))
 
 (defmethod execute ((conn connection) (statement string) &rest values)
   (let* ((cxn (conn conn))
@@ -77,7 +92,7 @@
           (encode-value
            (make-instance 'execute-header :op :execute :qid (qid qid) :vals values)
            cxn)
-          (read-single-packet cxn))
+          (read-single-packet conn))
         (error (format nil "Unprepared query: ~A" statement)))))
 
 (defun next-stream-id* (used-streams)

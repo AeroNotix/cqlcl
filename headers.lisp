@@ -171,14 +171,3 @@
   (let* ((op-code (elt header +packet-type-index+))
          (resp-type (gethash op-code +op-code-digit-to-name+)))
     resp-type))
-
-(defun read-single-packet (conn)
-  (let* ((header-type (parse-header (parse-bytes conn 8))))
-    (ccase header-type
-      (:supported
-       (parse-supported-packet conn))
-      (:error
-       (parse-error-packet conn))
-      (:ready :ready)
-      (:result
-       (parse-result-packet conn)))))
