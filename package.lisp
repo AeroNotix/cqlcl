@@ -35,5 +35,6 @@
    #:parse-uuid
    #:read-single-packet
    #:used-streams
+   #:with-next-stream-id
    #:write-int
    #:write-short))

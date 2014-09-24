@@ -322,3 +322,16 @@
            (is (= size (length (used-streams client))))
            (is (= size (length (lparallel:pmapcar #'funcall flippers))))
            (is (= 0 (length (used-streams client))))))))
+
+(defun make-with-flipper (client)
+  (lambda ()
+    (with-next-stream-id foo client)))
+
+(test with-next-stream-id-returns
+  (let* ((client (make-connection :connection-type :async))
+         (size 254)
+         (flippers (loop for i from 1 to size
+                        collect
+                        (make-with-flipper client))))
+    (lparallel:pmapcar #'funcall flippers)
+    (is (= 0 (length (used-streams client))))))
