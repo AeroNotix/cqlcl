@@ -39,6 +39,12 @@
 (defgeneric execute (connection statement &rest values)
   (:documentation "Executes a prepared statement with bound values."))
 
+(defmethod options ((conn connection))
+  (let ((header (make-instance 'options-header :op :options))
+        (cxn (conn conn)))
+    (encode-value header cxn)
+    (read-single-packet cxn)))
+
 (defmethod startup ((conn connection) &key (version "3.0.0") (compression nil))
   (declare (ignore compression)) ;; TODO: Implement compression
   (let* ((options (alexandria:alist-hash-table
@@ -46,12 +52,6 @@
          (header (make-instance 'startup-header :op :startup :opts options))
          (cxn (conn conn)))
     (encode-value header cxn)))
-
-(defmethod options ((conn connection))
-  (let ((header (make-instance 'options-header :op :options))
-        (cxn (conn conn)))
-    (encode-value header cxn)
-    (read-single-packet cxn)))
 
 (defmethod prepare ((conn connection) (statement string))
   (when (not (gethash statement (pqs conn)))
