@@ -14,14 +14,16 @@
 (defun make-connection (&key (connection-type :sync) (host "localhost") (port 9042)); TODO: &key version compression)
   (let* ((c-types '((:sync . connection)
                     (:async . async-connection)))
-         (conn (usocket:socket-stream
+         (cxn (usocket:socket-stream
                 (usocket:socket-connect host port :element-type '(unsigned-byte 8))))
          (cxn-type (cdr (assoc connection-type c-types)))
-         (cxn (make-instance cxn-type :conn conn)))
-    (let* ((options (options cxn)))
-      (setf (conn-options cxn) options)
-      (assert (eq (startup cxn) :ready))
-      cxn)))
+         (conn (make-instance cxn-type :conn cxn)))
+    conn))
+
+(defmethod initialize-instance :after ((conn connection) &key)
+  (let* ((options (options conn)))
+    (setf (conn-options conn) options)
+    (assert (eq (startup conn) :ready))))
 
 (defgeneric read-single-packet (connection)
   (:documentation "Reads a single CQL reply packet from a CQL connection."))
